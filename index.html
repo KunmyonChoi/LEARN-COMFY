@@ -1,0 +1,2245 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ComfyUI 구조 설명</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'Segoe UI', 'Noto Sans KR', sans-serif;
+    background: #0f1117;
+    color: #e2e8f0;
+    overflow: hidden;
+    height: 100vh;
+  }
+
+  .slideshow {
+    width: 100vw;
+    height: 100vh;
+    position: relative;
+  }
+
+  .slide {
+    display: none;
+    width: 100%;
+    height: 100%;
+    padding: 60px 80px;
+    position: absolute;
+    top: 0; left: 0;
+    animation: fadeIn 0.4s ease;
+  }
+
+  .slide.active { display: flex; flex-direction: column; justify-content: center; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── 슬라이드 번호 1: 표지 ── */
+  .slide-cover {
+    background: linear-gradient(135deg, #1a1f2e 0%, #0f1117 60%, #1a1f2e 100%);
+    align-items: center;
+    text-align: center;
+  }
+  .slide-cover .badge {
+    display: inline-block;
+    background: rgba(99,179,237,0.15);
+    border: 1px solid rgba(99,179,237,0.4);
+    color: #63b3ed;
+    padding: 6px 20px;
+    border-radius: 20px;
+    font-size: 14px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 28px;
+  }
+  .slide-cover h1 {
+    font-size: 64px;
+    font-weight: 800;
+    background: linear-gradient(135deg, #63b3ed, #9f7aea, #ed64a6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    line-height: 1.1;
+    margin-bottom: 24px;
+  }
+  .slide-cover .subtitle {
+    font-size: 22px;
+    color: #718096;
+    max-width: 600px;
+  }
+  .slide-cover .version {
+    margin-top: 48px;
+    display: flex;
+    gap: 32px;
+    justify-content: center;
+  }
+  .slide-cover .ver-item {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 12px 24px;
+    border-radius: 12px;
+    font-size: 14px;
+    color: #a0aec0;
+  }
+  .slide-cover .ver-item span { color: #63b3ed; font-weight: 700; }
+
+  /* ── 공통 헤더 ── */
+  .slide-header {
+    margin-bottom: 40px;
+  }
+  .slide-header .slide-num {
+    font-size: 13px;
+    color: #4a5568;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .slide-header h2 {
+    font-size: 38px;
+    font-weight: 800;
+    color: #f7fafc;
+    line-height: 1.2;
+  }
+  .slide-header h2 .accent {
+    background: linear-gradient(135deg, #63b3ed, #9f7aea);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+  .slide-header .divider {
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(90deg, #63b3ed, #9f7aea);
+    border-radius: 2px;
+    margin-top: 16px;
+  }
+
+  /* ── 테이블 슬라이드 ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 15px;
+  }
+  thead tr {
+    background: rgba(99,179,237,0.1);
+  }
+  thead th {
+    padding: 14px 20px;
+    text-align: left;
+    color: #63b3ed;
+    font-size: 13px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    border-bottom: 1px solid rgba(99,179,237,0.3);
+  }
+  tbody tr {
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+    transition: background 0.2s;
+  }
+  tbody tr:hover { background: rgba(255,255,255,0.03); }
+  tbody td {
+    padding: 13px 20px;
+    color: #e2e8f0;
+    vertical-align: top;
+  }
+  tbody td:first-child {
+    font-family: 'Consolas', 'Courier New', monospace;
+    color: #68d391;
+    font-size: 14px;
+    white-space: nowrap;
+  }
+  tbody td:last-child { color: #a0aec0; line-height: 1.6; }
+
+  /* ── 카드 그리드 ── */
+  .card-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .card-grid-2 {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+  }
+  .card {
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.07);
+    border-radius: 16px;
+    padding: 24px;
+    transition: border-color 0.2s, transform 0.2s;
+  }
+  .card:hover {
+    border-color: rgba(99,179,237,0.3);
+    transform: translateY(-2px);
+  }
+  .card .card-icon {
+    font-size: 28px;
+    margin-bottom: 12px;
+  }
+  .card .card-title {
+    font-family: 'Consolas', monospace;
+    font-size: 15px;
+    color: #68d391;
+    margin-bottom: 8px;
+    font-weight: 700;
+  }
+  .card .card-desc {
+    font-size: 13px;
+    color: #718096;
+    line-height: 1.6;
+  }
+  .card .tag {
+    display: inline-block;
+    margin-top: 10px;
+    padding: 3px 10px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+  }
+  .tag-blue  { background: rgba(99,179,237,0.15); color: #63b3ed; }
+  .tag-green { background: rgba(104,211,145,0.15); color: #68d391; }
+  .tag-purple{ background: rgba(159,122,234,0.15); color: #9f7aea; }
+  .tag-pink  { background: rgba(237,100,166,0.15); color: #ed64a6; }
+  .tag-orange{ background: rgba(246,173,85,0.15);  color: #f6ad55; }
+
+  /* ── 구조 다이어그램 ── */
+  .tree {
+    font-family: 'Consolas', monospace;
+    font-size: 15px;
+    line-height: 2;
+    color: #a0aec0;
+  }
+  .tree .folder { color: #f6ad55; font-weight: 700; }
+  .tree .file   { color: #68d391; }
+  .tree .comment{ color: #4a5568; font-style: italic; }
+  .tree .indent { padding-left: 28px; }
+  .tree .indent2{ padding-left: 56px; }
+
+  /* ── 두 컬럼 ── */
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+  }
+  .col-section h3 {
+    font-size: 16px;
+    color: #63b3ed;
+    margin-bottom: 16px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(99,179,237,0.2);
+    font-family: 'Consolas', monospace;
+  }
+
+  /* ── 네비게이션 ── */
+  .nav {
+    position: fixed;
+    bottom: 36px;
+    right: 60px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    z-index: 100;
+  }
+  .nav-btn {
+    background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.12);
+    color: #a0aec0;
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .nav-btn:hover {
+    background: rgba(99,179,237,0.2);
+    border-color: rgba(99,179,237,0.5);
+    color: #63b3ed;
+  }
+  .nav-counter {
+    font-size: 13px;
+    color: #4a5568;
+    min-width: 60px;
+    text-align: center;
+  }
+  .nav-counter .cur { color: #63b3ed; font-weight: 700; font-size: 16px; }
+
+  /* 진행바 */
+  .progress-bar {
+    position: fixed;
+    top: 0; left: 0;
+    height: 3px;
+    background: linear-gradient(90deg, #63b3ed, #9f7aea);
+    transition: width 0.4s ease;
+    z-index: 100;
+  }
+
+  /* 슬라이드 번호 표시 */
+  .slide-indicator {
+    position: fixed;
+    bottom: 44px;
+    left: 60px;
+    font-size: 12px;
+    color: #2d3748;
+    letter-spacing: 1px;
+  }
+
+  /* highlight row */
+  .hl { background: rgba(99,179,237,0.06) !important; }
+
+  /* ── 코드 블록 ── */
+  pre {
+    background: #0d1117;
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 12px;
+    padding: 20px 24px;
+    overflow-x: auto;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    color: #e2e8f0;
+  }
+  .kw  { color: #ff79c6; }   /* keyword */
+  .fn  { color: #50fa7b; }   /* function/method */
+  .st  { color: #f1fa8c; }   /* string */
+  .cm  { color: #6272a4; font-style: italic; }  /* comment */
+  .tp  { color: #8be9fd; }   /* type */
+  .dc  { color: #bd93f9; }   /* decorator */
+  .nm  { color: #ffb86c; }   /* number */
+
+  /* ── 비교 테이블 ── */
+  .compare-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+  .compare-box {
+    border-radius: 16px;
+    padding: 28px;
+  }
+  .compare-box.official {
+    background: rgba(99,179,237,0.06);
+    border: 1px solid rgba(99,179,237,0.25);
+  }
+  .compare-box.custom {
+    background: rgba(104,211,145,0.06);
+    border: 1px solid rgba(104,211,145,0.25);
+  }
+  .compare-box h3 {
+    font-family: 'Consolas', monospace;
+    font-size: 18px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .compare-box.official h3 { color: #63b3ed; }
+  .compare-box.custom   h3 { color: #68d391; }
+  .compare-box ul {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .compare-box ul li {
+    font-size: 14px;
+    color: #a0aec0;
+    line-height: 1.6;
+    padding-left: 16px;
+    position: relative;
+  }
+  .compare-box ul li::before {
+    content: '▸';
+    position: absolute;
+    left: 0;
+    color: #4a5568;
+  }
+  .compare-box.official ul li::before { color: #63b3ed; }
+  .compare-box.custom   ul li::before { color: #68d391; }
+</style>
+</head>
+<body>
+
+<div class="progress-bar" id="progressBar"></div>
+<div class="slide-indicator" id="slideIndicator"></div>
+
+<div class="slideshow" id="slideshow">
+
+  <!-- ══ SLIDE 1: 표지 ══ -->
+  <div class="slide slide-cover active">
+    <div class="badge">Architecture Overview</div>
+    <h1>ComfyUI<br>구조 해설</h1>
+    <p class="subtitle">주요 파일과 폴더별 역할 완전 분석</p>
+    <div class="version">
+      <div class="ver-item">버전 <span>v0.16.4</span></div>
+      <div class="ver-item">PyTorch <span>2.10.0+cu130</span></div>
+      <div class="ver-item">GPU <span>RTX 6000 Ada</span></div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 2: 저장소 소개 ══ -->
+  <div class="slide">
+    <div class="slide-header">
+      <div class="slide-num">Slide 02</div>
+      <h2>주요 <span class="accent">저장소 소개</span></h2>
+      <div class="divider"></div>
+    </div>
+    <div class="card-grid" style="margin-bottom:28px;">
+      <div class="card" style="border-color:rgba(99,179,237,0.3);">
+        <div class="card-icon">🧠</div>
+        <div class="card-title" style="color:#63b3ed;">ComfyUI</div>
+        <div class="card-desc">노드 기반 AI 생성 워크플로우 GUI 본체. 이미지·비디오·오디오 생성 파이프라인을 코딩 없이 구성. SD1.5 / SDXL / Flux / Wan 등 다양한 모델 지원.</div>
+        <span class="tag tag-blue">Core Engine</span>
+      </div>
+      <div class="card" style="border-color:rgba(104,211,145,0.3);">
+        <div class="card-icon">🔌</div>
+        <div class="card-title" style="color:#68d391;">ComfyUI-Manager</div>
+        <div class="card-desc">커스텀 노드 및 모델 통합 관리 도구. UI 내에서 노드 설치·업데이트·제거. 누락 노드 자동 감지 및 설치 제안. 스냅샷/복원 기능.</div>
+        <span class="tag tag-green">Node Manager</span>
+      </div>
+      <div class="card" style="border-color:rgba(159,122,234,0.3);">
+        <div class="card-icon">⬇️</div>
+        <div class="card-title" style="color:#9f7aea;">ComfyUI-Downloader</div>
+        <div class="card-desc">UI에서 URL 입력만으로 모델을 올바른 폴더에 직접 다운로드. 8개 병렬 연결 고속 다운로드. 실시간 진행률 표시 및 취소 지원.</div>
+        <span class="tag tag-purple">Model Downloader</span>
+      </div>
+    </div>
+    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:20px 28px;">
+      <div style="color:#a0aec0;font-size:13px;margin-bottom:12px;font-weight:700;letter-spacing:1px;">관계 구조</div>
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+        <div style="background:rgba(99,179,237,0.12);border:1px solid rgba(99,179,237,0.3);border-radius:10px;padding:10px 20px;font-family:monospace;font-size:14px;color:#63b3ed;">ComfyUI (본체)</div>
+        <div style="color:#4a5568;font-size:18px;">→</div>
+        <div style="background:rgba(104,211,145,0.12);border:1px solid rgba(104,211,145,0.3);border-radius:10px;padding:10px 20px;font-family:monospace;font-size:14px;color:#68d391;">ComfyUI-Manager (노드 관리)</div>
+        <div style="color:#4a5568;font-size:18px;">→</div>
+        <div style="background:rgba(159,122,234,0.12);border:1px solid rgba(159,122,234,0.3);border-radius:10px;padding:10px 20px;font-family:monospace;font-size:14px;color:#9f7aea;">ComfyUI-Downloader (모델 다운로드)</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 3: ComfyUI 설치 ══ -->
+  <div class="slide">
+    <div class="slide-header">
+      <div class="slide-num">Slide 03</div>
+      <h2><span class="accent">ComfyUI</span> 설치 — Linux</h2>
+      <div class="divider"></div>
+    </div>
+    <div class="two-col" style="gap:32px;align-items:start;">
+      <div>
+        <pre><span class="cm"># 1. 저장소 클론</span>
+git clone https://github.com/Comfy-Org/ComfyUI.git
+<span class="kw">cd</span> ComfyUI
+
+<span class="cm"># 2. 가상환경 생성 및 활성화</span>
+python3 -m venv venv
+<span class="kw">source</span> venv/bin/activate
+
+<span class="cm"># 3. PyTorch 설치 (CUDA 13.0 기준)</span>
+pip install torch torchvision torchaudio \
+  --extra-index-url \
+  https://download.pytorch.org/whl/cu130
+
+<span class="cm"># 4. 의존 패키지 설치</span>
+pip install -r requirements.txt
+
+<span class="cm"># 5. 실행</span>
+python main.py --listen 127.0.0.1</pre>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div style="background:rgba(99,179,237,0.08);border:1px solid rgba(99,179,237,0.2);border-radius:12px;padding:20px;">
+          <div style="color:#63b3ed;font-weight:700;margin-bottom:10px;">주요 실행 옵션</div>
+          <table style="font-size:13px;">
+            <tbody>
+              <tr><td style="color:#68d391;font-family:monospace;padding:4px 12px 4px 0;">--listen 127.0.0.1</td><td style="color:#a0aec0;">로컬 전용 접속</td></tr>
+              <tr><td style="color:#68d391;font-family:monospace;padding:4px 12px 4px 0;">--listen 0.0.0.0</td><td style="color:#a0aec0;">외부 접속 허용</td></tr>
+              <tr><td style="color:#68d391;font-family:monospace;padding:4px 12px 4px 0;">--port 8188</td><td style="color:#a0aec0;">포트 지정 (기본값)</td></tr>
+              <tr><td style="color:#68d391;font-family:monospace;padding:4px 12px 4px 0;">--preview-method auto</td><td style="color:#a0aec0;">생성 중 미리보기</td></tr>
+              <tr><td style="color:#68d391;font-family:monospace;padding:4px 12px 4px 0;">--cpu</td><td style="color:#a0aec0;">CPU 모드</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div style="background:rgba(246,173,85,0.08);border:1px solid rgba(246,173,85,0.2);border-radius:12px;padding:20px;">
+          <div style="color:#f6ad55;font-weight:700;margin-bottom:10px;">SSL 인증서 오류 방지</div>
+          <pre style="font-size:12px;margin:0;background:transparent;border:none;padding:0;"><span class="cm"># run_gpu.sh 에 추가</span>
+<span class="kw">export</span> SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt
+<span class="kw">export</span> REQUESTS_CA_BUNDLE=/etc/ssl/certs/ca-certificates.crt</pre>
+        </div>
+        <div style="background:rgba(237,100,166,0.08);border:1px solid rgba(237,100,166,0.2);border-radius:12px;padding:16px 20px;">
+          <div style="color:#ed64a6;font-weight:700;font-size:13px;margin-bottom:6px;">접속 주소</div>
+          <div style="font-family:monospace;color:#63b3ed;font-size:15px;">http://127.0.0.1:8188</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 4: Manager & Downloader 설치 ══ -->
+  <div class="slide">
+    <div class="slide-header">
+      <div class="slide-num">Slide 04</div>
+      <h2><span class="accent">Manager</span> &amp; <span class="accent">Downloader</span> 설치 — Linux</h2>
+      <div class="divider"></div>
+    </div>
+    <div class="two-col" style="gap:32px;align-items:start;">
+      <div>
+        <div style="color:#68d391;font-size:13px;font-weight:700;margin-bottom:12px;">ComfyUI-Manager</div>
+        <pre><span class="cm"># custom_nodes/ 아래에 클론</span>
+<span class="kw">cd</span> ComfyUI/custom_nodes
+git clone \
+  https://github.com/Comfy-Org/ComfyUI-Manager.git
+
+<span class="cm"># 별도 pip install 불필요</span>
+<span class="cm"># ComfyUI 재시작 시 자동 로드됨</span></pre>
+        <div style="margin-top:16px;background:rgba(104,211,145,0.08);border:1px solid rgba(104,211,145,0.2);border-radius:12px;padding:16px 20px;">
+          <div style="color:#68d391;font-weight:700;font-size:13px;margin-bottom:8px;">주요 기능</div>
+          <div style="color:#a0aec0;font-size:13px;line-height:1.9;">
+            ▸ UI → Manager 버튼으로 노드 관리<br>
+            ▸ 누락 노드 자동 감지 &amp; 설치 제안<br>
+            ▸ Model Manager로 모델 탐색 및 설치<br>
+            ▸ 스냅샷 저장/복원으로 환경 관리
+          </div>
+        </div>
+      </div>
+      <div>
+        <div style="color:#9f7aea;font-size:13px;font-weight:700;margin-bottom:12px;">ComfyUI-Downloader</div>
+        <pre><span class="cm"># custom_nodes/ 아래에 클론</span>
+<span class="kw">cd</span> ComfyUI/custom_nodes
+git clone \
+  https://github.com/romandev-codex/\
+ComfyUI-Downloader.git
+
+<span class="cm"># venv 활성화 후 의존 패키지 설치 (필수)</span>
+<span class="kw">cd</span> /path/to/ComfyUI
+<span class="kw">source</span> venv/bin/activate
+pip install -r \
+  custom_nodes/ComfyUI-Downloader/requirements.txt
+
+<span class="cm"># ComfyUI 재시작</span></pre>
+        <div style="margin-top:16px;background:rgba(159,122,234,0.08);border:1px solid rgba(159,122,234,0.2);border-radius:12px;padding:16px 20px;">
+          <div style="color:#9f7aea;font-weight:700;font-size:13px;margin-bottom:8px;">주요 기능</div>
+          <div style="color:#a0aec0;font-size:13px;line-height:1.9;">
+            ▸ URL 입력 → 모델 폴더 자동 분류 저장<br>
+            ▸ 8개 병렬 연결 고속 다운로드<br>
+            ▸ 실시간 진행률·속도 표시<br>
+            ▸ 다운로드 취소 및 덮어쓰기 확인
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:20px;background:rgba(246,173,85,0.08);border:1px solid rgba(246,173,85,0.2);border-radius:12px;padding:14px 24px;">
+      <span style="color:#f6ad55;font-weight:700;">⚠️ 공통 주의사항:</span>
+      <span style="color:#a0aec0;font-size:13px;margin-left:8px;">pip install 은 반드시 <code style="color:#68d391">ComfyUI/venv</code> 를 활성화한 상태에서 실행. 그렇지 않으면 ComfyUI에 적용되지 않음.</span>
+    </div>
+  </div>
+
+
+  <!-- ══ SLIDE 05: 단축키 — 생성·편집·노드 제어 ══ -->
+  <div class="slide">
+    <div class="slide-header">
+      <div class="slide-num">Slide 05</div>
+      <h2>단축키 — <span class="accent">생성 · 편집 · 노드 제어</span></h2>
+      <div class="divider"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;">
+      <!-- 생성/실행 -->
+      <div>
+        <div style="color:#a0aec0;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,0.08);">생성 &amp; 실행</div>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);">
+            <div style="display:flex;gap:3px;min-width:160px;flex-wrap:wrap;"><span style="background:#1a3a5c;color:#63b3ed;border:1px solid rgba(99,179,237,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">Ctrl</span><span style="color:#a0aec0;font-size:10px;">+</span><span style="background:rgba(104,211,145,0.15);color:#68d391;border:1px solid rgba(104,211,145,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">Enter</span></div>
+            <span style="font-size:11px;color:#a0aec0;">큐에 추가 (생성 시작)</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);">
+            <div style="display:flex;gap:3px;min-width:160px;flex-wrap:wrap;"><span style="background:#1a3a5c;color:#63b3ed;border:1px solid rgba(99,179,237,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">Ctrl</span><span style="color:#a0aec0;font-size:10px;">+</span><span style="background:#1a3a5c;color:#63b3ed;border:1px solid rgba(99,179,237,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">Shift</span><span style="color:#a0aec0;font-size:10px;">+</span><span style="background:rgba(104,211,145,0.15);color:#68d391;border:1px solid rgba(104,211,145,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">Enter</span></div>
+            <span style="font-size:11px;color:#a0aec0;">큐 맨 앞에 삽입</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);">
+            <div style="display:flex;gap:3px;min-width:160px;flex-wrap:wrap;"><span style="background:#1a3a5c;color:#63b3ed;border:1px solid rgba(99,179,237,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">Ctrl</span><span style="color:#a0aec0;font-size:10px;">+</span><span style="background:#1a3a5c;color:#63b3ed;border:1px solid rgba(99,179,237,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">Alt</span><span style="color:#a0aec0;font-size:10px;">+</span><span style="background:rgba(104,211,145,0.15);color:#68d391;border:1px solid rgba(104,211,145,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">Enter</span></div>
+            <span style="font-size:11px;color:#a0aec0;">현재 생성 중단</span>
+          </div>
+        </div>
+        <div style="color:#a0aec0;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin:10px 0 8px;padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,0.08);">파일 &amp; 워크플로우</div>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);">
+            <div style="display:flex;gap:3px;min-width:160px;"><span style="background:#1a3a5c;color:#63b3ed;border:1px solid rgba(99,179,237,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">Ctrl</span><span style="color:#a0aec0;font-size:10px;">+</span><span style="background:rgba(104,211,145,0.15);color:#68d391;border:1px solid rgba(104,211,145,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">S</span></div>
+            <span style="font-size:11px;color:#a0aec0;">워크플로우 저장 (JSON)</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);">
+            <div style="display:flex;gap:3px;min-width:160px;"><span style="background:#1a3a5c;color:#63b3ed;border:1px solid rgba(99,179,237,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">Ctrl</span><span style="color:#a0aec0;font-size:10px;">+</span><span style="background:rgba(104,211,145,0.15);color:#68d391;border:1px solid rgba(104,211,145,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">O</span></div>
+            <span style="font-size:11px;color:#a0aec0;">워크플로우 불러오기</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);">
+            <div style="display:flex;gap:3px;min-width:160px;"><span style="background:#1a3a5c;color:#63b3ed;border:1px solid rgba(99,179,237,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">Ctrl</span><span style="color:#a0aec0;font-size:10px;">+</span><span style="background:rgba(104,211,145,0.15);color:#68d391;border:1px solid rgba(104,211,145,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">D</span></div>
+            <span style="font-size:11px;color:#a0aec0;">기본 워크플로우로 초기화</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);">
+            <div style="display:flex;gap:3px;min-width:160px;"><span style="background:#1a3a5c;color:#63b3ed;border:1px solid rgba(99,179,237,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">Ctrl</span><span style="color:#a0aec0;font-size:10px;">+</span><span style="background:rgba(252,129,129,0.15);color:#fc8181;border:1px solid rgba(252,129,129,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">Delete</span></div>
+            <span style="font-size:11px;color:#a0aec0;">캔버스 전체 비우기</span>
+          </div>
+        </div>
+      </div>
+      <!-- 편집/선택 -->
+      <div>
+        <div style="color:#a0aec0;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,0.08);">편집 &amp; 선택</div>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);">
+            <div style="display:flex;gap:3px;min-width:160px;"><span style="background:#1a3a5c;color:#63b3ed;border:1px solid rgba(99,179,237,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">Ctrl</span><span style="color:#a0aec0;font-size:10px;">+</span><span style="background:rgba(104,211,145,0.15);color:#68d391;border:1px solid rgba(104,211,145,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">Z / Y</span></div>
+            <span style="font-size:11px;color:#a0aec0;">Undo / Redo</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);">
+            <div style="display:flex;gap:3px;min-width:160px;"><span style="background:#1a3a5c;color:#63b3ed;border:1px solid rgba(99,179,237,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">Ctrl</span><span style="color:#a0aec0;font-size:10px;">+</span><span style="background:rgba(104,211,145,0.15);color:#68d391;border:1px solid rgba(104,211,145,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">A</span></div>
+            <span style="font-size:11px;color:#a0aec0;">모든 노드 선택</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);">
+            <div style="display:flex;gap:3px;min-width:160px;"><span style="background:#1a3a5c;color:#63b3ed;border:1px solid rgba(99,179,237,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">Ctrl</span><span style="color:#a0aec0;font-size:10px;">+</span><span style="background:rgba(104,211,145,0.15);color:#68d391;border:1px solid rgba(104,211,145,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">C / V</span></div>
+            <span style="font-size:11px;color:#a0aec0;">복사 / 붙여넣기</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);">
+            <div style="display:flex;gap:3px;min-width:160px;flex-wrap:wrap;"><span style="background:#1a3a5c;color:#63b3ed;border:1px solid rgba(99,179,237,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">Ctrl</span><span style="color:#a0aec0;font-size:10px;">+</span><span style="background:#1a3a5c;color:#63b3ed;border:1px solid rgba(99,179,237,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">Shift</span><span style="color:#a0aec0;font-size:10px;">+</span><span style="background:rgba(104,211,145,0.15);color:#68d391;border:1px solid rgba(104,211,145,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">V</span></div>
+            <span style="font-size:11px;color:#a0aec0;">붙여넣기 (외부 연결 유지)</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);">
+            <div style="display:flex;gap:3px;min-width:160px;"><span style="background:rgba(252,129,129,0.15);color:#fc8181;border:1px solid rgba(252,129,129,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">Delete</span><span style="color:#a0aec0;font-size:10px;">/</span><span style="background:rgba(252,129,129,0.15);color:#fc8181;border:1px solid rgba(252,129,129,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">Backspace</span></div>
+            <span style="font-size:11px;color:#a0aec0;">선택 노드 삭제</span>
+          </div>
+        </div>
+        <div style="color:#a0aec0;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin:10px 0 8px;padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,0.08);">노드 추가</div>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);">
+            <div style="display:flex;gap:3px;min-width:160px;"><span style="background:rgba(159,122,234,0.15);color:#9f7aea;border:1px solid rgba(159,122,234,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">LMB 더블클릭</span></div>
+            <span style="font-size:11px;color:#a0aec0;">빈 캔버스 → 노드 검색</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);">
+            <div style="display:flex;gap:3px;min-width:160px;"><span style="background:rgba(159,122,234,0.15);color:#9f7aea;border:1px solid rgba(159,122,234,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">RMB</span></div>
+            <span style="font-size:11px;color:#a0aec0;">컨텍스트 메뉴</span>
+          </div>
+        </div>
+      </div>
+      <!-- 노드 제어 + 캔버스 + 사이드바 -->
+      <div>
+        <div style="color:#a0aec0;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:8px;padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,0.08);">노드 제어</div>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);">
+            <div style="display:flex;gap:3px;min-width:160px;"><span style="background:#1a3a5c;color:#63b3ed;border:1px solid rgba(99,179,237,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">Ctrl</span><span style="color:#a0aec0;font-size:10px;">+</span><span style="background:rgba(104,211,145,0.15);color:#68d391;border:1px solid rgba(104,211,145,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">M</span></div>
+            <span style="font-size:11px;color:#a0aec0;">뮤트/해제 (실행 제외)</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);">
+            <div style="display:flex;gap:3px;min-width:160px;"><span style="background:#1a3a5c;color:#63b3ed;border:1px solid rgba(99,179,237,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">Ctrl</span><span style="color:#a0aec0;font-size:10px;">+</span><span style="background:rgba(104,211,145,0.15);color:#68d391;border:1px solid rgba(104,211,145,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">B</span></div>
+            <span style="font-size:11px;color:#a0aec0;">바이패스 (입력→출력 패스스루)</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);">
+            <div style="display:flex;gap:3px;min-width:160px;"><span style="background:#1a3a5c;color:#63b3ed;border:1px solid rgba(99,179,237,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">Ctrl</span><span style="color:#a0aec0;font-size:10px;">+</span><span style="background:rgba(104,211,145,0.15);color:#68d391;border:1px solid rgba(104,211,145,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">G</span></div>
+            <span style="font-size:11px;color:#a0aec0;">선택 노드에 그룹 프레임 추가</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);">
+            <div style="display:flex;gap:3px;min-width:160px;"><span style="background:rgba(246,173,85,0.15);color:#f6ad55;border:1px solid rgba(246,173,85,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">Alt</span><span style="color:#a0aec0;font-size:10px;">+</span><span style="background:rgba(104,211,145,0.15);color:#68d391;border:1px solid rgba(104,211,145,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">C</span></div>
+            <span style="font-size:11px;color:#a0aec0;">노드 접기/펼치기</span>
+          </div>
+        </div>
+        <div style="color:#a0aec0;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin:10px 0 8px;padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,0.08);">캔버스 탐색</div>
+        <div style="display:flex;flex-direction:column;gap:5px;">
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);">
+            <div style="display:flex;gap:3px;min-width:160px;"><span style="background:rgba(246,173,85,0.15);color:#f6ad55;border:1px solid rgba(246,173,85,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">Space</span><span style="color:#a0aec0;font-size:10px;">+</span><span style="background:rgba(159,122,234,0.15);color:#9f7aea;border:1px solid rgba(159,122,234,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">Drag</span></div>
+            <span style="font-size:11px;color:#a0aec0;">캔버스 패닝</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);">
+            <div style="display:flex;gap:3px;min-width:160px;"><span style="background:rgba(246,173,85,0.15);color:#f6ad55;border:1px solid rgba(246,173,85,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">.</span><span style="color:#a0aec0;font-size:10px;">/</span><span style="background:rgba(246,173,85,0.15);color:#f6ad55;border:1px solid rgba(246,173,85,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">F</span></div>
+            <span style="font-size:11px;color:#a0aec0;">선택 뷰 맞춤 / 전체화면</span>
+          </div>
+        </div>
+        <div style="color:#a0aec0;font-size:10px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin:10px 0 8px;padding-bottom:5px;border-bottom:1px solid rgba(255,255,255,0.08);">사이드바 토글</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:5px;">
+          <div style="display:flex;align-items:center;gap:6px;padding:5px 8px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);"><span style="background:rgba(246,173,85,0.15);color:#f6ad55;border:1px solid rgba(246,173,85,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">Q</span><span style="font-size:10px;color:#a0aec0;">Queue</span></div>
+          <div style="display:flex;align-items:center;gap:6px;padding:5px 8px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);"><span style="background:rgba(246,173,85,0.15);color:#f6ad55;border:1px solid rgba(246,173,85,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">W</span><span style="font-size:10px;color:#a0aec0;">Workflow</span></div>
+          <div style="display:flex;align-items:center;gap:6px;padding:5px 8px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);"><span style="background:rgba(246,173,85,0.15);color:#f6ad55;border:1px solid rgba(246,173,85,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">N</span><span style="font-size:10px;color:#a0aec0;">Node Library</span></div>
+          <div style="display:flex;align-items:center;gap:6px;padding:5px 8px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);"><span style="background:rgba(246,173,85,0.15);color:#f6ad55;border:1px solid rgba(246,173,85,0.3);padding:1px 6px;border-radius:4px;font-size:10px;font-family:monospace;">M</span><span style="font-size:10px;color:#a0aec0;">Model Library</span></div>
+          <div style="display:flex;align-items:center;gap:6px;padding:5px 8px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);"><span style="background:#1a3a5c;color:#63b3ed;border:1px solid rgba(99,179,237,0.3);padding:1px 5px;border-radius:4px;font-size:10px;font-family:monospace;">Ctrl+`</span><span style="font-size:10px;color:#a0aec0;">Log 패널</span></div>
+          <div style="display:flex;align-items:center;gap:6px;padding:5px 8px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);"><span style="background:#1a3a5c;color:#63b3ed;border:1px solid rgba(99,179,237,0.3);padding:1px 5px;border-radius:4px;font-size:10px;font-family:monospace;">Ctrl+,</span><span style="font-size:10px;color:#a0aec0;">설정</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 06: 마우스 조작 & 워크플로우 팁 ══ -->
+  <div class="slide">
+    <div class="slide-header">
+      <div class="slide-num">Slide 06</div>
+      <h2>마우스 조작 &amp; <span class="accent">워크플로우 팁</span></h2>
+      <div class="divider"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <!-- 마우스 조작 -->
+      <div>
+        <div style="color:#63b3ed;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">마우스 조작</div>
+        <div style="display:flex;flex-direction:column;gap:5px;margin-bottom:14px;">
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 10px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);">
+            <span style="background:rgba(159,122,234,0.15);color:#9f7aea;border:1px solid rgba(159,122,234,0.3);padding:1px 7px;border-radius:4px;font-size:10px;font-family:monospace;min-width:110px;text-align:center;">빈 공간 LMB Drag</span>
+            <span style="font-size:11px;color:#a0aec0;">캔버스 패닝</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 10px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);">
+            <span style="background:rgba(159,122,234,0.15);color:#9f7aea;border:1px solid rgba(159,122,234,0.3);padding:1px 7px;border-radius:4px;font-size:10px;font-family:monospace;min-width:110px;text-align:center;">Scroll Wheel</span>
+            <span style="font-size:11px;color:#a0aec0;">줌 인/아웃</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 10px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);">
+            <span style="background:rgba(159,122,234,0.15);color:#9f7aea;border:1px solid rgba(159,122,234,0.3);padding:1px 7px;border-radius:4px;font-size:10px;font-family:monospace;min-width:110px;text-align:center;">LMB Drag 빈 공간</span>
+            <span style="font-size:11px;color:#a0aec0;">박스 선택 (영역 드래그)</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 10px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);">
+            <span style="background:rgba(159,122,234,0.15);color:#9f7aea;border:1px solid rgba(159,122,234,0.3);padding:1px 7px;border-radius:4px;font-size:10px;font-family:monospace;min-width:110px;text-align:center;">출력 포트 Drag</span>
+            <span style="font-size:11px;color:#a0aec0;">연결선 생성 → 입력 포트에 드롭</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 10px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);">
+            <span style="background:rgba(159,122,234,0.15);color:#9f7aea;border:1px solid rgba(159,122,234,0.3);padding:1px 7px;border-radius:4px;font-size:10px;font-family:monospace;min-width:110px;text-align:center;">포트 → 빈 공간 Drop</span>
+            <span style="font-size:11px;color:#a0aec0;">호환 노드 검색창 팝업</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 10px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);">
+            <span style="background:rgba(159,122,234,0.15);color:#9f7aea;border:1px solid rgba(159,122,234,0.3);padding:1px 7px;border-radius:4px;font-size:10px;font-family:monospace;min-width:110px;text-align:center;">연결선 더블클릭</span>
+            <span style="font-size:11px;color:#a0aec0;">Reroute 노드 삽입</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 10px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);">
+            <span style="background:rgba(159,122,234,0.15);color:#9f7aea;border:1px solid rgba(159,122,234,0.3);padding:1px 7px;border-radius:4px;font-size:10px;font-family:monospace;min-width:110px;text-align:center;">위젯 RMB</span>
+            <span style="font-size:11px;color:#a0aec0;">Convert to Input / Widget</span>
+          </div>
+          <div style="display:flex;align-items:center;gap:8px;padding:5px 10px;background:rgba(255,255,255,0.03);border-radius:6px;border:1px solid rgba(255,255,255,0.06);">
+            <span style="background:rgba(159,122,234,0.15);color:#9f7aea;border:1px solid rgba(159,122,234,0.3);padding:1px 7px;border-radius:4px;font-size:10px;font-family:monospace;min-width:110px;text-align:center;">이미지 노드 RMB</span>
+            <span style="font-size:11px;color:#a0aec0;">이미지 저장 / 열기</span>
+          </div>
+        </div>
+      </div>
+      <!-- 워크플로우 팁 -->
+      <div>
+        <div style="color:#68d391;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;margin-bottom:10px;">워크플로우 팁</div>
+        <div style="display:flex;flex-direction:column;gap:7px;">
+          <div style="background:rgba(99,179,237,0.06);border:1px solid rgba(99,179,237,0.15);border-radius:8px;padding:8px 12px;">
+            <div style="color:#63b3ed;font-size:11px;font-weight:600;margin-bottom:3px;">PNG에 워크플로우 내장</div>
+            <div style="font-size:11px;color:#a0aec0;line-height:1.5;">생성된 PNG/WebP에 워크플로우 전체가 메타데이터로 포함. 이미지를 캔버스에 드래그&드롭하면 자동 복원.</div>
+          </div>
+          <div style="background:rgba(104,211,145,0.06);border:1px solid rgba(104,211,145,0.15);border-radius:8px;padding:8px 12px;">
+            <div style="color:#68d391;font-size:11px;font-weight:600;margin-bottom:3px;">변경된 노드만 재실행 (스마트 캐싱)</div>
+            <div style="font-size:11px;color:#a0aec0;line-height:1.5;">미변경 노드는 재실행 없이 캐시 사용. Sampler만 바꾸면 Checkpoint 로딩 생략 → 반복 작업 고속.</div>
+          </div>
+          <div style="background:rgba(159,122,234,0.06);border:1px solid rgba(159,122,234,0.15);border-radius:8px;padding:8px 12px;">
+            <div style="color:#9f7aea;font-size:11px;font-weight:600;margin-bottom:3px;">Primitive 노드로 값 공유</div>
+            <div style="font-size:11px;color:#a0aec0;line-height:1.5;">동일 Seed/CFG를 여러 KSampler에서 공유할 때 Primitive 노드 하나를 여러 입력에 연결.</div>
+          </div>
+          <div style="background:rgba(246,173,85,0.06);border:1px solid rgba(246,173,85,0.15);border-radius:8px;padding:8px 12px;">
+            <div style="color:#f6ad55;font-size:11px;font-weight:600;margin-bottom:3px;">Mute vs Bypass 구분</div>
+            <div style="font-size:11px;color:#a0aec0;line-height:1.5;"><code style="background:rgba(255,255,255,0.08);padding:1px 4px;border-radius:3px;font-size:10px;">Ctrl+M</code> Mute: 완전 비활성화. <code style="background:rgba(255,255,255,0.08);padding:1px 4px;border-radius:3px;font-size:10px;">Ctrl+B</code> Bypass: 입력→출력 패스스루. A/B 비교엔 Bypass.</div>
+          </div>
+          <div style="background:rgba(104,211,145,0.06);border:1px solid rgba(104,211,145,0.15);border-radius:8px;padding:8px 12px;">
+            <div style="color:#68d391;font-size:11px;font-weight:600;margin-bottom:3px;">Badge Mode &amp; Link Render Mode</div>
+            <div style="font-size:11px;color:#a0aec0;line-height:1.5;">Settings → Badge Mode: Show All → 노드 출처 표시. Link Render Mode: Straight → 선 직선화로 가독성 향상.</div>
+          </div>
+          <div style="background:rgba(99,179,237,0.06);border:1px solid rgba(99,179,237,0.15);border-radius:8px;padding:8px 12px;">
+            <div style="color:#63b3ed;font-size:11px;font-weight:600;margin-bottom:3px;">모델 핫 리로드</div>
+            <div style="font-size:11px;color:#a0aec0;line-height:1.5;">실행 중 models/ 폴더에 파일 추가 후 단축키 <code style="background:rgba(255,255,255,0.08);padding:1px 4px;border-radius:3px;font-size:10px;">R</code>(Refresh)를 누르면 목록에 즉시 반영.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 07: CLI 실행 옵션 ══ -->
+  <div class="slide">
+    <div class="slide-header">
+      <div class="slide-num">Slide 07</div>
+      <h2>CLI <span class="accent">실행 옵션</span></h2>
+      <div class="divider"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <div>
+        <div style="color:#63b3ed;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">VRAM 최적화</div>
+        <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;font-family:monospace;font-size:11px;line-height:2;margin-bottom:12px;">
+          <span style="color:#a0aec0;"># VRAM 크기에 따라 선택</span><br>
+          python main.py <span style="color:#63b3ed;font-weight:600;">--lowvram</span><span style="color:#718096;">        # 6GB 이하</span><br>
+          python main.py <span style="color:#63b3ed;font-weight:600;">--normalvram</span><span style="color:#718096;">      # 8GB (기본값)</span><br>
+          python main.py <span style="color:#63b3ed;font-weight:600;">--highvram</span><span style="color:#718096;">        # 12GB+ · 최대 성능</span><br>
+          python main.py <span style="color:#63b3ed;font-weight:600;">--novram</span><span style="color:#718096;">          # CPU 메모리 활용</span><br>
+          python main.py <span style="color:#63b3ed;font-weight:600;">--cpu</span><span style="color:#718096;">             # GPU 없이 CPU만 사용</span>
+        </div>
+        <div style="color:#9f7aea;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">성능 &amp; 정밀도</div>
+        <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;font-family:monospace;font-size:11px;line-height:2;margin-bottom:12px;">
+          python main.py <span style="color:#9f7aea;font-weight:600;">--fp16</span><span style="color:#718096;">            # FP16 (기본값)</span><br>
+          python main.py <span style="color:#9f7aea;font-weight:600;">--bf16</span><span style="color:#718096;">            # BF16 (Ampere+ 권장)</span><br>
+          python main.py <span style="color:#9f7aea;font-weight:600;">--fp32</span><span style="color:#718096;">            # FP32 (느리지만 정확)</span><br>
+          python main.py <span style="color:#9f7aea;font-weight:600;">--xformers</span><span style="color:#718096;">        # 15-25% 속도 향상</span><br>
+          python main.py <span style="color:#9f7aea;font-weight:600;">--preview-method</span> auto<span style="color:#718096;">  # 프리뷰 방식</span>
+        </div>
+        <div style="color:#f6ad55;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">네트워크 &amp; 디버그</div>
+        <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;font-family:monospace;font-size:11px;line-height:2;">
+          python main.py <span style="color:#f6ad55;font-weight:600;">--listen</span> 127.0.0.1<span style="color:#718096;"> # local only</span><br>
+          python main.py <span style="color:#f6ad55;font-weight:600;">--listen</span> 0.0.0.0<span style="color:#718096;">   # LAN 접근 허용</span><br>
+          python main.py <span style="color:#f6ad55;font-weight:600;">--port</span> 8188<span style="color:#718096;">        # 포트 변경</span><br>
+          python main.py <span style="color:#f6ad55;font-weight:600;">--verbose</span><span style="color:#718096;">         # 상세 로그</span><br>
+          python main.py <span style="color:#f6ad55;font-weight:600;">--disable-auto-launch</span><span style="color:#718096;">  # 브라우저 자동 실행 방지</span>
+        </div>
+      </div>
+      <div>
+        <div style="color:#68d391;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">extra_model_paths.yaml — 다중 모델 경로</div>
+        <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.08);border-radius:8px;padding:12px;font-family:monospace;font-size:11px;line-height:2;margin-bottom:10px;">
+          <span style="color:#718096;"># ~/.config/comfyui/extra_model_paths.yaml</span><br>
+          <span style="color:#68d391;">my_models</span>:<br>
+          &nbsp;&nbsp;<span style="color:#63b3ed;">base_path</span>: /mnt/models/<br>
+          &nbsp;&nbsp;<span style="color:#63b3ed;">checkpoints</span>: checkpoints/<br>
+          &nbsp;&nbsp;<span style="color:#63b3ed;">loras</span>: loras/<br>
+          &nbsp;&nbsp;<span style="color:#63b3ed;">vae</span>: vae/<br>
+          &nbsp;&nbsp;<span style="color:#63b3ed;">controlnet</span>: controlnet/<br>
+          &nbsp;&nbsp;<span style="color:#63b3ed;">text_encoders</span>: text_encoders/<br>
+          &nbsp;&nbsp;<span style="color:#63b3ed;">diffusion_models</span>: diffusion_models/<br>
+          &nbsp;&nbsp;<span style="color:#63b3ed;">clip_vision</span>: clip_vision/
+        </div>
+        <div style="background:rgba(99,179,237,0.08);border-left:3px solid #63b3ed;border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:10px;font-size:11px;color:#e2e8f0;line-height:1.6;">
+          <strong style="color:#63b3ed;">extra_model_paths.yaml 장점:</strong> 모델 파일을 ComfyUI 폴더 밖에 두고 경로만 등록. 여러 ComfyUI 인스턴스에서 동일 모델 파일 공유 가능. 시작 시 <code style="background:rgba(255,255,255,0.1);padding:1px 4px;border-radius:3px;">--extra-model-paths-config</code> 플래그로 지정.
+        </div>
+        <div style="background:rgba(246,173,85,0.08);border-left:3px solid #f6ad55;border-radius:0 8px 8px 0;padding:10px 14px;font-size:11px;color:#e2e8f0;line-height:1.6;">
+          <strong style="color:#f6ad55;">Linux xformers:</strong> RTX 계열 GPU에서 유효. <code style="background:rgba(255,255,255,0.1);padding:1px 4px;border-radius:3px;">pip install xformers</code> 별도 설치 필요 (ComfyUI venv 활성화 후). CUDA 버전 맞아야 설치 성공.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 08: 전체 디렉토리 구조 ══ -->
+  <div class="slide">
+    <div class="slide-header">
+      <div class="slide-num">Slide 08</div>
+      <h2>전체 <span class="accent">디렉토리 구조</span></h2>
+      <div class="divider"></div>
+    </div>
+    <div class="tree">
+      <div><span class="folder">ComfyUI/</span></div>
+      <div class="indent"><span class="file">main.py</span> <span class="comment">← 진입점</span></div>
+      <div class="indent"><span class="file">server.py</span> <span class="comment">← 웹서버</span></div>
+      <div class="indent"><span class="file">execution.py</span> <span class="comment">← 워크플로우 실행 엔진</span></div>
+      <div class="indent"><span class="file">nodes.py</span> <span class="comment">← 내장 기본 노드</span></div>
+      <div class="indent"><span class="file">folder_paths.py</span> <span class="comment">← 경로 관리</span></div>
+      <div class="indent"><span class="folder">comfy/</span> <span class="comment">← 핵심 AI 엔진</span></div>
+      <div class="indent"><span class="folder">comfy_extras/</span> <span class="comment">← 확장 노드 집합</span></div>
+      <div class="indent"><span class="folder">custom_nodes/</span> <span class="comment">← 사용자 커스텀 노드</span></div>
+      <div class="indent"><span class="folder">models/</span> <span class="comment">← AI 모델 파일</span></div>
+      <div class="indent"><span class="folder">api_server/</span> <span class="comment">← REST API</span></div>
+      <div class="indent"><span class="folder">comfy_execution/</span> <span class="comment">← 실행 스케줄링</span></div>
+      <div class="indent"><span class="folder">input/ output/ temp/</span> <span class="comment">← 파일 I/O</span></div>
+      <div class="indent"><span class="folder">user/</span> <span class="comment">← 설정 &amp; 워크플로우 저장</span></div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 6: 루트 핵심 파일 ══ -->
+  <div class="slide">
+    <div class="slide-header">
+      <div class="slide-num">Slide 09</div>
+      <h2>루트 <span class="accent">핵심 파일</span></h2>
+      <div class="divider"></div>
+    </div>
+    <table>
+      <thead>
+        <tr><th>파일</th><th>역할</th></tr>
+      </thead>
+      <tbody>
+        <tr class="hl"><td>main.py</td><td>애플리케이션 진입점. CLI 인수 파싱 후 서버 초기화 및 시작</td></tr>
+        <tr><td>server.py</td><td>aiohttp 기반 웹서버. REST API 엔드포인트 및 WebSocket 실시간 통신 처리</td></tr>
+        <tr class="hl"><td>execution.py</td><td>워크플로우 실행 엔진. 노드 그래프를 위상 정렬 후 순서대로 실행</td></tr>
+        <tr><td>nodes.py</td><td>KSampler, Load Checkpoint 등 핵심 내장 노드 정의</td></tr>
+        <tr class="hl"><td>folder_paths.py</td><td>모델·출력·입력 폴더 경로 등록 및 검색. extra_model_paths.yaml 연동</td></tr>
+        <tr><td>latent_preview.py</td><td>생성 중 실시간 latent 미리보기 디코딩 처리</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══ SLIDE 7: comfy/ 폴더 ══ -->
+  <div class="slide">
+    <div class="slide-header">
+      <div class="slide-num">Slide 10</div>
+      <h2><span class="accent">comfy/</span> — 핵심 AI 엔진</h2>
+      <div class="divider"></div>
+    </div>
+    <table>
+      <thead>
+        <tr><th>파일</th><th>역할</th></tr>
+      </thead>
+      <tbody>
+        <tr class="hl"><td>model_management.py</td><td>GPU/CPU VRAM 동적 관리. 모델 로딩·언로딩·오프로드 전략 결정</td></tr>
+        <tr><td>samplers.py</td><td>DDIM, DPM++, Euler, LCM 등 다양한 샘플러 구현체</td></tr>
+        <tr class="hl"><td>sd.py</td><td>Stable Diffusion 계열 모델 로딩 및 초기화</td></tr>
+        <tr><td>supported_models.py</td><td>SD1.5 / SDXL / Flux / Wan / HunyuanVideo 등 모델 타입 자동 감지</td></tr>
+        <tr class="hl"><td>model_patcher.py</td><td>LoRA, 모델 패치를 원본 모델에 동적으로 적용</td></tr>
+        <tr><td>lora.py</td><td>LoRA 가중치 파싱 및 적용 로직</td></tr>
+        <tr class="hl"><td>controlnet.py</td><td>ControlNet 모델 처리 및 conditioning 주입</td></tr>
+        <tr><td>quant_ops.py</td><td>FP8 / FP4 양자화 연산. comfy_kitchen 백엔드(cuda/eager/triton) 연동</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ══ SLIDE 8: comfy_extras/ ══ -->
+  <div class="slide">
+    <div class="slide-header">
+      <div class="slide-num">Slide 11</div>
+      <h2><span class="accent">comfy_extras/</span> — 확장 노드 모음</h2>
+      <div class="divider"></div>
+    </div>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">🎬</div>
+        <div class="card-title">nodes_wan.py</div>
+        <div class="card-desc">Wan 2.1 / 2.2 비디오 생성 모델 전용 노드</div>
+        <span class="tag tag-blue">Video</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚡</div>
+        <div class="card-title">nodes_flux.py</div>
+        <div class="card-desc">Flux 이미지 생성 모델 노드</div>
+        <span class="tag tag-purple">Image</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎵</div>
+        <div class="card-title">nodes_audio.py</div>
+        <div class="card-desc">오디오 로딩, 처리, 저장 노드</div>
+        <span class="tag tag-green">Audio</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔗</div>
+        <div class="card-title">nodes_controlnet.py</div>
+        <div class="card-desc">ControlNet 조건 이미지 적용 노드</div>
+        <span class="tag tag-orange">Control</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">🧩</div>
+        <div class="card-title">nodes_model_merging.py</div>
+        <div class="card-desc">여러 모델 가중치를 병합하는 노드</div>
+        <span class="tag tag-pink">Merge</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">🖼</div>
+        <div class="card-title">nodes_upscale_model.py</div>
+        <div class="card-desc">Real-ESRGAN 등 업스케일 모델 노드</div>
+        <span class="tag tag-blue">Upscale</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">🎭</div>
+        <div class="card-title">nodes_qwen.py</div>
+        <div class="card-desc">Qwen 이미지 편집 모델 전용 노드</div>
+        <span class="tag tag-purple">Edit</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">📐</div>
+        <div class="card-title">nodes_latent.py</div>
+        <div class="card-desc">Latent 공간 조작 (노이즈, 합성 등)</div>
+        <span class="tag tag-green">Latent</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔧</div>
+        <div class="card-title">nodes_torch_compile.py</div>
+        <div class="card-desc">torch.compile 최적화 적용 노드</div>
+        <span class="tag tag-orange">Optimize</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 9: models/ 폴더 ══ -->
+  <div class="slide">
+    <div class="slide-header">
+      <div class="slide-num">Slide 12</div>
+      <h2><span class="accent">models/</span> — AI 모델 저장소</h2>
+      <div class="divider"></div>
+    </div>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">checkpoints/</div>
+        <div class="card-desc">SD1.5, SDXL 등 올인원 체크포인트 파일 (.safetensors, .ckpt)</div>
+        <span class="tag tag-blue">Checkpoint</span>
+      </div>
+      <div class="card">
+        <div class="card-title">diffusion_models/</div>
+        <div class="card-desc">분리된 diffusion 모델 (Flux, Wan, Qwen 등 신규 아키텍처)</div>
+        <span class="tag tag-purple">Diffusion</span>
+      </div>
+      <div class="card">
+        <div class="card-title">text_encoders/</div>
+        <div class="card-desc">CLIP, T5, Qwen VL 등 텍스트/멀티모달 인코더</div>
+        <span class="tag tag-green">Text Enc</span>
+      </div>
+      <div class="card">
+        <div class="card-title">vae/</div>
+        <div class="card-desc">이미지 ↔ latent 변환 VAE 모델</div>
+        <span class="tag tag-orange">VAE</span>
+      </div>
+      <div class="card">
+        <div class="card-title">loras/</div>
+        <div class="card-desc">스타일·캐릭터 LoRA 어댑터 가중치</div>
+        <span class="tag tag-pink">LoRA</span>
+      </div>
+      <div class="card">
+        <div class="card-title">controlnet/</div>
+        <div class="card-desc">포즈·깊이·엣지 등 ControlNet 모델</div>
+        <span class="tag tag-blue">Control</span>
+      </div>
+      <div class="card">
+        <div class="card-title">upscale_models/</div>
+        <div class="card-desc">Real-ESRGAN 등 업스케일 네트워크</div>
+        <span class="tag tag-green">Upscale</span>
+      </div>
+      <div class="card">
+        <div class="card-title">model_patches/</div>
+        <div class="card-desc">모델에 적용하는 패치 파일 (infiniteTalk 등)</div>
+        <span class="tag tag-purple">Patch</span>
+      </div>
+      <div class="card">
+        <div class="card-title">audio_encoders/</div>
+        <div class="card-desc">wav2vec2 등 오디오 인코더 모델</div>
+        <span class="tag tag-orange">Audio</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 10: 모델 호환성 매트릭스 ══ -->
+  <div class="slide">
+    <div class="slide-header">
+      <div class="slide-num">Slide 13</div>
+      <h2>모델 <span class="accent">호환성 매트릭스</span></h2>
+      <div class="divider"></div>
+    </div>
+    <div style="overflow-x:auto; margin-bottom:14px;">
+      <table style="width:100%;border-collapse:collapse;font-size:12px;min-width:720px;">
+        <thead>
+          <tr style="background:rgba(255,255,255,0.05);">
+            <th style="padding:8px 10px;text-align:left;color:#a0aec0;font-size:11px;border-bottom:1px solid rgba(255,255,255,0.08);white-space:nowrap;">아키텍처</th>
+            <th style="padding:8px 10px;text-align:left;color:#a0aec0;font-size:11px;border-bottom:1px solid rgba(255,255,255,0.08);white-space:nowrap;">CLIP / Text Encoder</th>
+            <th style="padding:8px 10px;text-align:left;color:#a0aec0;font-size:11px;border-bottom:1px solid rgba(255,255,255,0.08);">VAE</th>
+            <th style="padding:8px 10px;text-align:left;color:#a0aec0;font-size:11px;border-bottom:1px solid rgba(255,255,255,0.08);">ControlNet</th>
+            <th style="padding:8px 10px;text-align:left;color:#a0aec0;font-size:11px;border-bottom:1px solid rgba(255,255,255,0.08);">IPAdapter</th>
+            <th style="padding:8px 10px;text-align:left;color:#a0aec0;font-size:11px;border-bottom:1px solid rgba(255,255,255,0.08);white-space:nowrap;">Latent Ch.</th>
+            <th style="padding:8px 10px;text-align:left;color:#a0aec0;font-size:11px;border-bottom:1px solid rgba(255,255,255,0.08);white-space:nowrap;">기본 해상도</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+            <td style="padding:8px 10px;"><span style="background:#1a3a5c;color:#63b3ed;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;white-space:nowrap;">SD 1.5</span></td>
+            <td style="padding:8px 10px;color:#e2e8f0;font-size:12px;font-family:monospace;">clip_l (ViT-L/14)<br><span style="color:#68d391;">✓ 내장</span></td>
+            <td style="padding:8px 10px;color:#e2e8f0;font-size:12px;font-family:monospace;">vae-ft-mse-840000<br>또는 내장</td>
+            <td style="padding:8px 10px;color:#e2e8f0;font-size:12px;"><span style="color:#68d391;">✓</span> control_v11* 시리즈</td>
+            <td style="padding:8px 10px;color:#e2e8f0;font-size:12px;"><span style="color:#68d391;">✓</span> ip-adapter_sd15<br>ip-adapter-plus_sd15</td>
+            <td style="padding:8px 10px;color:#68d391;font-weight:600;text-align:center;">4ch</td>
+            <td style="padding:8px 10px;color:#e2e8f0;font-size:12px;">512×512</td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+            <td style="padding:8px 10px;"><span style="background:#2d1b6b;color:#b794f4;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;white-space:nowrap;">SDXL 1.0</span></td>
+            <td style="padding:8px 10px;color:#e2e8f0;font-size:12px;font-family:monospace;">clip_l + clip_g (dual)<br><span style="color:#68d391;">✓ 내장 dual</span></td>
+            <td style="padding:8px 10px;color:#e2e8f0;font-size:12px;font-family:monospace;">sdxl-vae-fp16-fix<br><span style="color:#f6ad55;">← fp16-fix 권장</span></td>
+            <td style="padding:8px 10px;color:#e2e8f0;font-size:12px;"><span style="color:#68d391;">✓</span> controlnet-*-sdxl<br><span style="color:#fc8181;">✗ SD1.5 CN 불가</span></td>
+            <td style="padding:8px 10px;color:#e2e8f0;font-size:12px;"><span style="color:#68d391;">✓</span> ip-adapter_sdxl<br>ip-adapter-plus_sdxl</td>
+            <td style="padding:8px 10px;color:#68d391;font-weight:600;text-align:center;">4ch</td>
+            <td style="padding:8px 10px;color:#e2e8f0;font-size:12px;">1024×1024</td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+            <td style="padding:8px 10px;"><span style="background:#1a3a1a;color:#68d391;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;white-space:nowrap;">SD 3.5</span></td>
+            <td style="padding:8px 10px;color:#e2e8f0;font-size:12px;font-family:monospace;">clip_l + clip_g + t5xxl<br><span style="color:#f6ad55;">★ 별도 로드 필수 (triple)</span></td>
+            <td style="padding:8px 10px;color:#e2e8f0;font-size:12px;font-family:monospace;">sd3_vae (내장 또는 별도)</td>
+            <td style="padding:8px 10px;color:#e2e8f0;font-size:12px;"><span style="color:#68d391;">✓</span> sd3.5_large_controlnet_*</td>
+            <td style="padding:8px 10px;color:#e2e8f0;font-size:12px;"><span style="color:#f6ad55;">△</span> 실험적 (제한적)</td>
+            <td style="padding:8px 10px;color:#f6ad55;font-weight:600;text-align:center;">16ch</td>
+            <td style="padding:8px 10px;color:#e2e8f0;font-size:12px;">1024×1024</td>
+          </tr>
+          <tr>
+            <td style="padding:8px 10px;"><span style="background:#3d2000;color:#f6ad55;padding:2px 8px;border-radius:4px;font-size:11px;font-weight:600;white-space:nowrap;">Flux.1</span></td>
+            <td style="padding:8px 10px;color:#e2e8f0;font-size:12px;font-family:monospace;">clip_l + t5xxl<br><span style="color:#f6ad55;">★ DualCLIPLoader 필수</span></td>
+            <td style="padding:8px 10px;color:#e2e8f0;font-size:12px;font-family:monospace;">ae.safetensors<br><span style="color:#fc8181;">✗ SDXL VAE 불가</span></td>
+            <td style="padding:8px 10px;color:#e2e8f0;font-size:12px;"><span style="color:#68d391;">✓</span> InstantX / XLabs Flux CN<br><span style="color:#fc8181;">✗ SD1.5/SDXL CN 불가</span></td>
+            <td style="padding:8px 10px;color:#e2e8f0;font-size:12px;"><span style="color:#68d391;">✓</span> XLabs / InstantX IP<br><small style="color:#a0aec0;">siglip-so400m 비전</small></td>
+            <td style="padding:8px 10px;color:#f6ad55;font-weight:600;text-align:center;">16ch</td>
+            <td style="padding:8px 10px;color:#e2e8f0;font-size:12px;">1024×1024</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="background:rgba(246,173,85,0.08);border-left:3px solid #f6ad55;border-radius:0 8px 8px 0;padding:10px 16px;font-size:12px;color:#e2e8f0;line-height:1.6;">
+      <strong style="color:#f6ad55;">⚠ 핵심 호환 원칙 3가지:</strong><br>
+      ① <strong>ControlNet / IPAdapter</strong>는 반드시 같은 아키텍처 것만 사용 — SD1.5 CN을 SDXL에 연결하면 shape mismatch 오류<br>
+      ② <strong>Flux VAE</strong>는 반드시 <code style="background:rgba(255,255,255,0.1);padding:1px 5px;border-radius:3px;">ae.safetensors</code> 사용 — sdxl_vae 사용 시 이미지 출력 깨짐<br>
+      ③ <strong>CFG 범위</strong>: Flux는 1.0~1.5 고정 / SD1.5·SDXL은 6~8 — 혼동 시 이미지 과포화 또는 프롬프트 무시
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 11: 아키텍처별 모델 구성 ══ -->
+  <div class="slide">
+    <div class="slide-header">
+      <div class="slide-num">Slide 14</div>
+      <h2>아키텍처별 <span class="accent">모델 구성</span></h2>
+      <div class="divider"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+      <div style="background:rgba(99,179,237,0.06);border:1px solid rgba(99,179,237,0.2);border-radius:10px;padding:14px;">
+        <div style="color:#63b3ed;font-weight:700;font-size:13px;margin-bottom:10px;">SD 1.5 기본 구성</div>
+        <div style="font-size:11px;color:#a0aec0;margin-bottom:3px;">Checkpoint</div>
+        <div style="font-size:11px;color:#e2e8f0;margin-bottom:8px;font-family:monospace;">v1-5-pruned-emaonly-fp16</div>
+        <div style="font-size:11px;color:#a0aec0;margin-bottom:3px;">VAE</div>
+        <div style="font-size:11px;color:#e2e8f0;margin-bottom:8px;font-family:monospace;">vae-ft-mse-840000-ema-pruned</div>
+        <div style="font-size:11px;color:#a0aec0;margin-bottom:3px;">CLIP</div>
+        <div style="font-size:11px;color:#e2e8f0;margin-bottom:8px;">내장 (별도 불필요)</div>
+        <div style="font-size:11px;color:#a0aec0;margin-bottom:3px;">ControlNet</div>
+        <div style="font-size:11px;color:#e2e8f0;margin-bottom:8px;font-family:monospace;">control_v11p_sd15_canny<br>control_v11f1p_sd15_depth</div>
+        <div style="font-size:11px;color:#68d391;">Sampler: DPM++ 2M Karras · 20-30 steps · CFG 6-8</div>
+      </div>
+      <div style="background:rgba(159,122,234,0.06);border:1px solid rgba(159,122,234,0.2);border-radius:10px;padding:14px;">
+        <div style="color:#9f7aea;font-weight:700;font-size:13px;margin-bottom:10px;">SDXL 1.0 기본 구성</div>
+        <div style="font-size:11px;color:#a0aec0;margin-bottom:3px;">Checkpoint</div>
+        <div style="font-size:11px;color:#e2e8f0;margin-bottom:8px;font-family:monospace;">sd_xl_base_1.0.safetensors</div>
+        <div style="font-size:11px;color:#a0aec0;margin-bottom:3px;">VAE</div>
+        <div style="font-size:11px;color:#e2e8f0;margin-bottom:8px;font-family:monospace;"><span style="color:#fc8181;">sdxl-vae-fp16-fix ← 필수 권장</span></div>
+        <div style="font-size:11px;color:#a0aec0;margin-bottom:3px;">CLIP</div>
+        <div style="font-size:11px;color:#e2e8f0;margin-bottom:8px;">내장 dual (CLIP-L + CLIP-G)</div>
+        <div style="font-size:11px;color:#a0aec0;margin-bottom:3px;">ControlNet</div>
+        <div style="font-size:11px;color:#e2e8f0;margin-bottom:8px;font-family:monospace;">controlnet-canny-sdxl-1.0<br>controlnet-depth-sdxl-1.0</div>
+        <div style="font-size:11px;color:#68d391;">Sampler: Euler · Simple · 20 steps · CFG 4-8</div>
+      </div>
+      <div style="background:rgba(104,211,145,0.06);border:1px solid rgba(104,211,145,0.2);border-radius:10px;padding:14px;">
+        <div style="color:#68d391;font-weight:700;font-size:13px;margin-bottom:10px;">SD 3.5 Large / Medium</div>
+        <div style="font-size:11px;color:#a0aec0;margin-bottom:3px;">Checkpoint</div>
+        <div style="font-size:11px;color:#e2e8f0;margin-bottom:8px;font-family:monospace;">sd3.5_large.safetensors<br>sd3.5_medium.safetensors</div>
+        <div style="font-size:11px;color:#a0aec0;margin-bottom:3px;">VAE</div>
+        <div style="font-size:11px;color:#e2e8f0;margin-bottom:8px;">내장 or sd3_vae (16ch)</div>
+        <div style="font-size:11px;color:#a0aec0;margin-bottom:3px;">CLIP</div>
+        <div style="font-size:11px;color:#e2e8f0;margin-bottom:8px;font-family:monospace;"><span style="color:#f6ad55;">clip_l + clip_g + t5xxl<br>TripleCLIPLoader 필수</span></div>
+        <div style="font-size:11px;color:#a0aec0;margin-bottom:3px;">ControlNet</div>
+        <div style="font-size:11px;color:#e2e8f0;margin-bottom:8px;font-family:monospace;">sd3.5_large_controlnet_canny</div>
+        <div style="font-size:11px;color:#68d391;">Sampler: DPM++ 2M · 28 steps · CFG 4.5</div>
+      </div>
+      <div style="background:rgba(246,173,85,0.06);border:1px solid rgba(246,173,85,0.2);border-radius:10px;padding:14px;">
+        <div style="color:#f6ad55;font-weight:700;font-size:13px;margin-bottom:10px;">Flux.1 Dev 표준 구성</div>
+        <div style="font-size:11px;color:#a0aec0;margin-bottom:3px;">Diffusion Model</div>
+        <div style="font-size:11px;color:#e2e8f0;margin-bottom:8px;font-family:monospace;">flux1-dev.safetensors<br><span style="color:#a0aec0;">→ models/diffusion_models/</span></div>
+        <div style="font-size:11px;color:#a0aec0;margin-bottom:3px;">VAE</div>
+        <div style="font-size:11px;color:#e2e8f0;margin-bottom:8px;font-family:monospace;"><span style="color:#fc8181;">ae.safetensors (전용 필수)</span></div>
+        <div style="font-size:11px;color:#a0aec0;margin-bottom:3px;">CLIP</div>
+        <div style="font-size:11px;color:#e2e8f0;margin-bottom:8px;font-family:monospace;"><span style="color:#f6ad55;">clip_l + t5xxl_fp16<br>DualCLIPLoader 사용</span></div>
+        <div style="font-size:11px;color:#68d391;">Sampler: euler · simple · 20-30 steps · CFG 1.0-1.5 · guidance 3.5</div>
+      </div>
+      <div style="background:rgba(246,173,85,0.06);border:1px solid rgba(246,173,85,0.2);border-radius:10px;padding:14px;">
+        <div style="color:#f6ad55;font-weight:700;font-size:13px;margin-bottom:10px;">Flux.1 Schnell 빠른 생성</div>
+        <div style="font-size:11px;color:#a0aec0;margin-bottom:3px;">Checkpoint</div>
+        <div style="font-size:11px;color:#e2e8f0;margin-bottom:8px;font-family:monospace;">flux1-schnell.safetensors<br><span style="color:#a0aec0;">→ models/checkpoints/ (all-in-one)</span></div>
+        <div style="font-size:11px;color:#a0aec0;margin-bottom:3px;">VAE / CLIP</div>
+        <div style="font-size:11px;color:#e2e8f0;margin-bottom:8px;">Dev와 동일 (ae.safetensors, t5xxl + clip_l)</div>
+        <div style="font-size:11px;color:#a0aec0;margin-bottom:3px;">특징</div>
+        <div style="font-size:11px;color:#e2e8f0;margin-bottom:8px;">distilled 모델 — 빠른 프리뷰·프로토타입용</div>
+        <div style="font-size:11px;color:#68d391;">Sampler: euler · simple · <strong>4 steps</strong> · CFG 1.0</div>
+      </div>
+      <div style="background:rgba(159,122,234,0.06);border:1px solid rgba(159,122,234,0.2);border-radius:10px;padding:14px;">
+        <div style="color:#9f7aea;font-weight:700;font-size:13px;margin-bottom:10px;">Pony Diffusion V6 XL</div>
+        <div style="font-size:11px;color:#a0aec0;margin-bottom:3px;">기반</div>
+        <div style="font-size:11px;color:#e2e8f0;margin-bottom:8px;">SDXL 아키텍처 → SDXL 호환 모든 부품 사용 가능</div>
+        <div style="font-size:11px;color:#a0aec0;margin-bottom:3px;">VAE</div>
+        <div style="font-size:11px;color:#e2e8f0;margin-bottom:8px;font-family:monospace;">sdxl-vae-fp16-fix</div>
+        <div style="font-size:11px;color:#a0aec0;margin-bottom:3px;">특이사항</div>
+        <div style="font-size:11px;color:#f6ad55;margin-bottom:8px;">score_9, score_8_up 등 품질 태그 필수</div>
+        <div style="font-size:11px;color:#68d391;">Sampler: DPM++ 2M SDE · Karras · 20-30 steps · CFG 5-7</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 12: 모델 다운로드 목록 ══ -->
+  <div class="slide">
+    <div class="slide-header">
+      <div class="slide-num">Slide 15</div>
+      <h2>모델 <span class="accent">다운로드 목록</span></h2>
+      <div class="divider"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <div>
+        <div style="color:#63b3ed;font-size:12px;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em;">SD 1.5 계열</div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">v1-5-pruned-emaonly-fp16.safetensors <span style="color:#718096;">→ models/checkpoints/</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">vae-ft-mse-840000-ema-pruned.safetensors <span style="color:#718096;">→ models/vae/</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">control_v11p_sd15_canny.pth <span style="color:#718096;">→ models/controlnet/</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">control_v11p_sd15_openpose.pth <span style="color:#718096;">→ models/controlnet/</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">control_v11f1p_sd15_depth.pth <span style="color:#718096;">→ models/controlnet/</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">ip-adapter_sd15.bin <span style="color:#718096;">→ models/ipadapter/</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">ip-adapter-plus_sd15.bin <span style="color:#718096;">→ models/ipadapter/</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:12px;">CLIP-ViT-H-14-laion2B-s32B-b79K.safetensors <span style="color:#718096;">→ models/clip_vision/</span></div>
+
+        <div style="color:#9f7aea;font-size:12px;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em;">SDXL 계열</div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">sd_xl_base_1.0.safetensors <span style="color:#718096;">→ models/checkpoints/</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">sdxl-vae-fp16-fix.safetensors <span style="color:#fc8181;">→ models/vae/ ← 필수 권장</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">controlnet-canny-sdxl-1.0 <span style="color:#718096;">→ models/controlnet/</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">ip-adapter_sdxl.safetensors <span style="color:#718096;">→ models/ipadapter/</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">ip-adapter-plus_sdxl.safetensors <span style="color:#718096;">→ models/ipadapter/</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">CLIP-ViT-bigG-14-laion2B-39B-b160k.safetensors <span style="color:#718096;">→ models/clip_vision/</span></div>
+      </div>
+      <div>
+        <div style="color:#68d391;font-size:12px;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em;">SD 3.5 계열</div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">sd3.5_large.safetensors <span style="color:#718096;">→ models/checkpoints/</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">sd3.5_medium.safetensors <span style="color:#718096;">→ models/checkpoints/</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">clip_l.safetensors <span style="color:#718096;">→ models/text_encoders/ (SD3.5/Flux 공용)</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">clip_g.safetensors <span style="color:#718096;">→ models/text_encoders/ (SD3.5 전용)</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">t5xxl_fp16.safetensors <span style="color:#718096;">→ models/text_encoders/ (RAM 32GB+ 권장)</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">sd3.5_large_controlnet_canny.safetensors <span style="color:#718096;">→ models/controlnet/</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:12px;">sd3.5_large_controlnet_depth.safetensors <span style="color:#718096;">→ models/controlnet/</span></div>
+
+        <div style="color:#f6ad55;font-size:12px;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em;">Flux.1 계열</div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">flux1-dev.safetensors <span style="color:#718096;">→ models/diffusion_models/</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">flux1-schnell.safetensors <span style="color:#718096;">→ models/checkpoints/</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">ae.safetensors (Flux VAE) <span style="color:#718096;">→ models/vae/</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">instantx_flux_canny.safetensors <span style="color:#718096;">→ models/controlnet/</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">instantx_flux_depth.safetensors <span style="color:#718096;">→ models/controlnet/</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">flux-canny-controlnet-v3.safetensors <span style="color:#718096;">→ models/xlabs/controlnets/</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">ip_adapter.bin (XLabs Flux) <span style="color:#718096;">→ models/xlabs/ipadapters/</span></div>
+      </div>
+    </div>
+    <div style="background:rgba(99,179,237,0.08);border-left:3px solid #63b3ed;border-radius:0 8px 8px 0;padding:10px 16px;margin-top:12px;font-size:12px;color:#e2e8f0;line-height:1.6;">
+      <strong style="color:#63b3ed;">💡 공유 파일:</strong> clip_l.safetensors, t5xxl_fp16.safetensors는 SD3.5와 Flux.1이 공유 — 한 번만 다운로드. ControlNet custom node 필요: InstantX → 기본 내장, XLabs → x-flux-comfyui 설치.
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 13: Sampler 가이드 ══ -->
+  <div class="slide">
+    <div class="slide-header">
+      <div class="slide-num">Slide 16</div>
+      <h2>아키텍처별 <span class="accent">Sampler 가이드</span></h2>
+      <div class="divider"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px;">
+      <div style="background:rgba(99,179,237,0.06);border:1px solid rgba(99,179,237,0.2);border-radius:10px;padding:14px;">
+        <div style="color:#63b3ed;font-weight:700;font-size:13px;margin-bottom:10px;">SD 1.5</div>
+        <div style="font-size:12px;color:#a0aec0;margin-bottom:2px;">권장 Sampler</div>
+        <div style="font-size:12px;color:#e2e8f0;margin-bottom:6px;font-family:monospace;">DPM++ 2M Karras<br>DPM++ SDE Karras</div>
+        <div style="font-size:12px;color:#a0aec0;margin-bottom:2px;">Steps / CFG / 해상도</div>
+        <div style="font-size:12px;color:#e2e8f0;margin-bottom:6px;">20–30 / <strong style="color:#63b3ed;">CFG 6–8</strong> / 512×512</div>
+        <div style="font-size:11px;color:#a0aec0;">LCM 가속: 4-8 steps · CFG 1-3 · lcm sampler</div>
+      </div>
+      <div style="background:rgba(159,122,234,0.06);border:1px solid rgba(159,122,234,0.2);border-radius:10px;padding:14px;">
+        <div style="color:#9f7aea;font-weight:700;font-size:13px;margin-bottom:10px;">SDXL</div>
+        <div style="font-size:12px;color:#a0aec0;margin-bottom:2px;">권장 Sampler</div>
+        <div style="font-size:12px;color:#e2e8f0;margin-bottom:6px;font-family:monospace;">Euler / DPM++ 2M Karras<br>DPM++ SDE Karras</div>
+        <div style="font-size:12px;color:#a0aec0;margin-bottom:2px;">Steps / CFG / 해상도</div>
+        <div style="font-size:12px;color:#e2e8f0;margin-bottom:6px;">20–30 / <strong style="color:#9f7aea;">CFG 4–8</strong> / 1024×1024</div>
+        <div style="font-size:11px;color:#a0aec0;">Turbo 계열: DPM++ SDE · 8 steps · CFG 2 · Karras</div>
+      </div>
+      <div style="background:rgba(104,211,145,0.06);border:1px solid rgba(104,211,145,0.2);border-radius:10px;padding:14px;">
+        <div style="color:#68d391;font-weight:700;font-size:13px;margin-bottom:10px;">SD 3.5 Large</div>
+        <div style="font-size:12px;color:#a0aec0;margin-bottom:2px;">권장 Sampler</div>
+        <div style="font-size:12px;color:#e2e8f0;margin-bottom:6px;font-family:monospace;">DPM++ 2M / Euler</div>
+        <div style="font-size:12px;color:#a0aec0;margin-bottom:2px;">Steps / CFG / 해상도</div>
+        <div style="font-size:12px;color:#e2e8f0;margin-bottom:6px;">28 steps / <strong style="color:#68d391;">CFG 4.5</strong> / 1024×1024</div>
+        <div style="font-size:11px;color:#a0aec0;">Turbo: 4 steps · CFG 1.2 / 16ch latent · TripleCLIPLoader 필수</div>
+      </div>
+      <div style="background:rgba(246,173,85,0.06);border:1px solid rgba(246,173,85,0.2);border-radius:10px;padding:14px;">
+        <div style="color:#f6ad55;font-weight:700;font-size:13px;margin-bottom:10px;">Flux.1 Dev</div>
+        <div style="font-size:12px;color:#a0aec0;margin-bottom:2px;">권장 Sampler / Scheduler</div>
+        <div style="font-size:12px;color:#e2e8f0;margin-bottom:6px;font-family:monospace;">euler / dpmpp_2m · simple · beta</div>
+        <div style="font-size:12px;color:#a0aec0;margin-bottom:2px;">Steps / CFG / Guidance</div>
+        <div style="font-size:12px;color:#e2e8f0;margin-bottom:6px;">20–30 / <strong style="color:#fc8181;">CFG 1.0–1.5</strong> / guidance 3.5</div>
+        <div style="font-size:11px;color:#a0aec0;">GGUF: CFG 1.0 고정 · 6-10 steps · ~43% 속도 향상</div>
+      </div>
+      <div style="background:rgba(246,173,85,0.06);border:1px solid rgba(246,173,85,0.2);border-radius:10px;padding:14px;">
+        <div style="color:#f6ad55;font-weight:700;font-size:13px;margin-bottom:10px;">Flux.1 Schnell</div>
+        <div style="font-size:12px;color:#a0aec0;margin-bottom:2px;">권장 Sampler</div>
+        <div style="font-size:12px;color:#e2e8f0;margin-bottom:6px;font-family:monospace;">euler · simple</div>
+        <div style="font-size:12px;color:#a0aec0;margin-bottom:2px;">Steps / CFG</div>
+        <div style="font-size:12px;color:#e2e8f0;margin-bottom:6px;"><strong style="color:#f6ad55;">4 steps (distilled)</strong> / CFG 1.0</div>
+        <div style="font-size:11px;color:#a0aec0;">빠른 프리뷰·프로토타이핑 전용. 디테일은 Dev가 우수.</div>
+      </div>
+      <div style="background:rgba(252,129,129,0.06);border:1px solid rgba(252,129,129,0.25);border-radius:10px;padding:14px;">
+        <div style="color:#fc8181;font-weight:700;font-size:13px;margin-bottom:10px;">⚠ CFG 실수 방지</div>
+        <div style="font-size:12px;color:#e2e8f0;margin-bottom:6px;line-height:1.6;">Flux에 <strong>CFG 7</strong> 적용 시<br>→ 이미지 과포화·오염</div>
+        <div style="font-size:12px;color:#e2e8f0;margin-bottom:6px;line-height:1.6;">SD1.5/SDXL에 <strong>CFG 1.0</strong> 적용 시<br>→ 프롬프트 완전 무시</div>
+        <div style="font-size:11px;color:#f6ad55;">모델 계열마다 CFG 범위가 완전히 다름!</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 14: 2025 최신 모델 호환성 매트릭스 ══ -->
+  <div class="slide">
+    <div class="slide-header">
+      <div class="slide-num">Slide 17</div>
+      <h2>2025 최신 모델 <span class="accent">호환성 매트릭스</span></h2>
+      <div class="divider"></div>
+    </div>
+    <div style="overflow-x:auto;margin-bottom:12px;">
+      <table style="width:100%;border-collapse:collapse;font-size:11px;min-width:860px;">
+        <thead>
+          <tr style="background:rgba(255,255,255,0.05);">
+            <th style="padding:7px 9px;text-align:left;color:#a0aec0;border-bottom:1px solid rgba(255,255,255,0.08);white-space:nowrap;">모델</th>
+            <th style="padding:7px 9px;text-align:left;color:#a0aec0;border-bottom:1px solid rgba(255,255,255,0.08);">유형</th>
+            <th style="padding:7px 9px;text-align:left;color:#a0aec0;border-bottom:1px solid rgba(255,255,255,0.08);">Text Encoder</th>
+            <th style="padding:7px 9px;text-align:left;color:#a0aec0;border-bottom:1px solid rgba(255,255,255,0.08);">VAE</th>
+            <th style="padding:7px 9px;text-align:left;color:#a0aec0;border-bottom:1px solid rgba(255,255,255,0.08);">ControlNet</th>
+            <th style="padding:7px 9px;text-align:left;color:#a0aec0;border-bottom:1px solid rgba(255,255,255,0.08);white-space:nowrap;">Sampler / Steps / CFG</th>
+            <th style="padding:7px 9px;text-align:left;color:#a0aec0;border-bottom:1px solid rgba(255,255,255,0.08);white-space:nowrap;">최소 VRAM</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+            <td style="padding:7px 9px;"><strong style="color:#f6ad55;">Qwen-Image</strong><br><span style="color:#a0aec0;font-size:10px;">20B MMDiT</span></td>
+            <td style="padding:7px 9px;"><span style="background:#1a3a5c;color:#63b3ed;padding:2px 6px;border-radius:3px;font-size:10px;">이미지</span></td>
+            <td style="padding:7px 9px;color:#e2e8f0;font-family:monospace;font-size:10px;">qwen_2.5_vl_7b_fp8_scaled<br><span style="color:#a0aec0;">text_encoders/</span></td>
+            <td style="padding:7px 9px;color:#fc8181;font-family:monospace;font-size:10px;">qwen_image_vae<br><span style="color:#a0aec0;">(Flux ae 불가)</span></td>
+            <td style="padding:7px 9px;color:#f6ad55;font-size:11px;">△ 파이프라인 조합</td>
+            <td style="padding:7px 9px;color:#e2e8f0;font-size:11px;">euler · beta · 30s · CFG 3-5</td>
+            <td style="padding:7px 9px;color:#e2e8f0;font-size:11px;">16GB+</td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+            <td style="padding:7px 9px;"><strong style="color:#f6ad55;">Qwen-Image-Edit</strong><br><span style="color:#a0aec0;font-size:10px;">20B Edit</span></td>
+            <td style="padding:7px 9px;"><span style="background:#1a3a1a;color:#68d391;padding:2px 6px;border-radius:3px;font-size:10px;">편집</span></td>
+            <td style="padding:7px 9px;color:#e2e8f0;font-family:monospace;font-size:10px;"><span style="color:#68d391;">Base와 공용</span><br>qwen_2.5_vl_7b_fp8_scaled</td>
+            <td style="padding:7px 9px;color:#e2e8f0;font-family:monospace;font-size:10px;"><span style="color:#68d391;">Base와 공용</span><br>qwen_image_vae</td>
+            <td style="padding:7px 9px;color:#fc8181;font-size:11px;">✗</td>
+            <td style="padding:7px 9px;color:#e2e8f0;font-size:11px;">euler · 30s · CFG 1.0</td>
+            <td style="padding:7px 9px;color:#e2e8f0;font-size:11px;">16GB+</td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+            <td style="padding:7px 9px;"><strong style="color:#68d391;">Z-Image Turbo</strong><br><span style="color:#a0aec0;font-size:10px;">6B S3-DiT</span></td>
+            <td style="padding:7px 9px;"><span style="background:#1a3a5c;color:#63b3ed;padding:2px 6px;border-radius:3px;font-size:10px;">이미지</span></td>
+            <td style="padding:7px 9px;color:#e2e8f0;font-family:monospace;font-size:10px;">qwen_3_4b<br><span style="color:#a0aec0;">text_encoders/</span></td>
+            <td style="padding:7px 9px;color:#68d391;font-family:monospace;font-size:10px;">ae.safetensors<br><span style="color:#68d391;">(Flux VAE 공용!)</span></td>
+            <td style="padding:7px 9px;color:#68d391;font-size:11px;">✓ Union CN<br><span style="color:#fc8181;font-size:10px;">→ model_patches/ 주의!</span></td>
+            <td style="padding:7px 9px;color:#e2e8f0;font-size:11px;">res_multistep · 8-10s · CFG 1.0</td>
+            <td style="padding:7px 9px;color:#e2e8f0;font-size:11px;">10GB(FP8)<br>20GB(BF16)</td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+            <td style="padding:7px 9px;"><strong style="color:#9f7aea;">HiDream-I1</strong><br><span style="color:#a0aec0;font-size:10px;">17B DiT+MoE</span></td>
+            <td style="padding:7px 9px;"><span style="background:#1a3a5c;color:#63b3ed;padding:2px 6px;border-radius:3px;font-size:10px;">이미지</span></td>
+            <td style="padding:7px 9px;color:#fc8181;font-family:monospace;font-size:10px;">clip_l/g_hidream<br>t5xxl_fp8 + llama_3.1_8b<br><span style="color:#fc8181;">QuadrupleCLIPLoader 4개!</span></td>
+            <td style="padding:7px 9px;color:#68d391;font-family:monospace;font-size:10px;">ae.safetensors<br><span style="color:#68d391;">(Flux VAE 공용!)</span></td>
+            <td style="padding:7px 9px;color:#fc8181;font-size:11px;">✗ 공식 미지원</td>
+            <td style="padding:7px 9px;color:#e2e8f0;font-size:11px;">Full:50s/CFG5.0 · Dev:28s/CFG1.0<br>Fast:16s/CFG1.0</td>
+            <td style="padding:7px 9px;color:#e2e8f0;font-size:11px;">16GB(fp8)<br>27GB+(bf16)</td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+            <td style="padding:7px 9px;"><strong style="color:#63b3ed;">LTX-2 / 2.3</strong><br><span style="color:#a0aec0;font-size:10px;">19B/22B DiT</span></td>
+            <td style="padding:7px 9px;"><span style="background:#2d1b6b;color:#b794f4;padding:2px 6px;border-radius:3px;font-size:10px;">비디오+오디오</span></td>
+            <td style="padding:7px 9px;color:#e2e8f0;font-family:monospace;font-size:10px;">gemma_3_12B_it_fp8<br>+ ltx-2.3_text_projection</td>
+            <td style="padding:7px 9px;color:#fc8181;font-family:monospace;font-size:10px;">video VAE + audio VAE<br><span style="color:#fc8181;">각각 별도 로드!</span></td>
+            <td style="padding:7px 9px;color:#f6ad55;font-size:11px;">△ 실험적</td>
+            <td style="padding:7px 9px;color:#e2e8f0;font-size:11px;">2-stage · Distill LoRA 적용시 8s<br>CFG 4.0 (Stage1)</td>
+            <td style="padding:7px 9px;color:#e2e8f0;font-size:11px;">12GB+<br>(GGUF: 8GB)</td>
+          </tr>
+          <tr style="border-bottom:1px solid rgba(255,255,255,0.05);">
+            <td style="padding:7px 9px;"><strong style="color:#ed64a6;">Wan 2.2</strong><br><span style="color:#a0aec0;font-size:10px;">5B / 14B DiT</span></td>
+            <td style="padding:7px 9px;"><span style="background:#2d1b6b;color:#b794f4;padding:2px 6px;border-radius:3px;font-size:10px;">비디오</span></td>
+            <td style="padding:7px 9px;color:#e2e8f0;font-family:monospace;font-size:10px;">umt5_xxl_fp8_e4m3fn_scaled<br><span style="color:#68d391;">(Wan 2.1 공용)</span></td>
+            <td style="padding:7px 9px;color:#e2e8f0;font-family:monospace;font-size:10px;">5B: wan2.2_vae<br>14B: wan_2.1_vae</td>
+            <td style="padding:7px 9px;color:#f6ad55;font-size:11px;">△ Wan2.1 CN 일부</td>
+            <td style="padding:7px 9px;color:#e2e8f0;font-size:11px;">14B: dual-model (high+low)<br>euler · CFG 5-7</td>
+            <td style="padding:7px 9px;color:#e2e8f0;font-size:11px;">8GB(5B)<br>24GB+(14B)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <div style="background:rgba(246,173,85,0.08);border-left:3px solid #f6ad55;border-radius:0 8px 8px 0;padding:10px 16px;font-size:12px;color:#e2e8f0;line-height:1.6;">
+      <strong style="color:#f6ad55;">⚠ 신세대 모델 공통 원칙:</strong> 대부분 <code style="background:rgba(255,255,255,0.1);padding:1px 5px;border-radius:3px;">models/diffusion_models/</code>에 로드 (checkpoints 아님). Text Encoder도 <code style="background:rgba(255,255,255,0.1);padding:1px 5px;border-radius:3px;">models/text_encoders/</code> 별도 폴더. 기존 <code style="background:rgba(255,255,255,0.1);padding:1px 5px;border-radius:3px;">CheckpointLoaderSimple</code> 대신 <code style="background:rgba(255,255,255,0.1);padding:1px 5px;border-radius:3px;">Load Diffusion Model</code> 노드 사용.
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 15: 2025 모델별 상세 구성 ══ -->
+  <div class="slide">
+    <div class="slide-header">
+      <div class="slide-num">Slide 18</div>
+      <h2>2025 모델별 <span class="accent">상세 구성</span></h2>
+      <div class="divider"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px;">
+      <div style="background:rgba(246,173,85,0.06);border:1px solid rgba(246,173,85,0.2);border-radius:10px;padding:14px;">
+        <div style="color:#f6ad55;font-weight:700;font-size:13px;margin-bottom:10px;">Qwen-Image (20B)</div>
+        <div style="font-size:11px;color:#a0aec0;margin-bottom:2px;">Diffusion</div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:6px;">qwen_image_bf16.safetensors<br><span style="color:#a0aec0;">→ diffusion_models/</span></div>
+        <div style="font-size:11px;color:#a0aec0;margin-bottom:2px;">Text Encoder</div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:6px;">qwen_2.5_vl_7b_fp8_scaled<br><span style="color:#a0aec0;">→ text_encoders/</span></div>
+        <div style="font-size:11px;color:#a0aec0;margin-bottom:2px;">VAE</div>
+        <div style="font-size:11px;color:#fc8181;font-family:monospace;margin-bottom:6px;">qwen_image_vae (전용, Flux ae 불가)</div>
+        <div style="font-size:11px;color:#a0aec0;margin-bottom:2px;">가속 LoRA</div>
+        <div style="font-size:11px;color:#e2e8f0;margin-bottom:6px;">Qwen-Image-Lightning-4steps-V1.0</div>
+        <div style="font-size:11px;color:#68d391;">Sampler: euler · beta · 30s · CFG 3-5</div>
+      </div>
+      <div style="background:rgba(246,173,85,0.06);border:1px solid rgba(246,173,85,0.2);border-radius:10px;padding:14px;">
+        <div style="color:#f6ad55;font-weight:700;font-size:13px;margin-bottom:10px;">Qwen-Image-Edit (20B)</div>
+        <div style="font-size:11px;color:#a0aec0;margin-bottom:2px;">Diffusion</div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:6px;">qwen_image_edit_fp8_e4m3fn<br><span style="color:#a0aec0;">→ diffusion_models/</span></div>
+        <div style="font-size:11px;color:#a0aec0;margin-bottom:2px;">Text Encoder / VAE</div>
+        <div style="font-size:11px;color:#68d391;margin-bottom:6px;">Qwen-Image Base와 완전 공용</div>
+        <div style="font-size:11px;color:#a0aec0;margin-bottom:2px;">입력 방식</div>
+        <div style="font-size:11px;color:#e2e8f0;margin-bottom:6px;">Qwen2.5-VL(시맨틱) + VAE Enc(외관) 동시</div>
+        <div style="font-size:11px;color:#e2e8f0;margin-bottom:6px;">텍스트 추가·삭제·수정(한/영) · 스타일 편집</div>
+        <div style="font-size:11px;color:#68d391;">Sampler: euler · 30s · CFG 1.0</div>
+      </div>
+      <div style="background:rgba(104,211,145,0.06);border:1px solid rgba(104,211,145,0.2);border-radius:10px;padding:14px;">
+        <div style="color:#68d391;font-weight:700;font-size:13px;margin-bottom:10px;">Z-Image Turbo (6B)</div>
+        <div style="font-size:11px;color:#a0aec0;margin-bottom:2px;">Diffusion</div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:6px;">z_image_turbo_bf16.safetensors<br><span style="color:#a0aec0;">→ diffusion_models/ (또는 AIO→checkpoints/)</span></div>
+        <div style="font-size:11px;color:#a0aec0;margin-bottom:2px;">Text Encoder / VAE</div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:6px;">qwen_3_4b / <span style="color:#68d391;">ae.safetensors (Flux 공용!)</span></div>
+        <div style="font-size:11px;color:#a0aec0;margin-bottom:2px;">ControlNet</div>
+        <div style="font-size:11px;color:#fc8181;margin-bottom:6px;">Union CN → <strong>model_patches/</strong> (controlnet 아님!)</div>
+        <div style="font-size:11px;color:#68d391;">Sampler: res_multistep · 8-10s · CFG 1.0</div>
+      </div>
+      <div style="background:rgba(159,122,234,0.06);border:1px solid rgba(159,122,234,0.2);border-radius:10px;padding:14px;">
+        <div style="color:#9f7aea;font-weight:700;font-size:13px;margin-bottom:10px;">HiDream-I1 (17B)</div>
+        <div style="font-size:11px;color:#a0aec0;margin-bottom:2px;">Diffusion</div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:6px;">hidream_i1_dev_fp8.safetensors<br><span style="color:#a0aec0;">→ diffusion_models/</span></div>
+        <div style="font-size:11px;color:#fc8181;margin-bottom:6px;"><strong>Text Encoder 4개 필수 (QuadrupleCLIPLoader):</strong><br>clip_l/g_hidream · t5xxl_fp8 · llama_3.1_8b_fp8</div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:6px;"><span style="color:#68d391;">ae.safetensors (Flux VAE 공용!)</span></div>
+        <div style="font-size:11px;color:#68d391;">Full:CFG5 / Dev·Fast:CFG1.0 · shift=3~6</div>
+      </div>
+      <div style="background:rgba(99,179,237,0.06);border:1px solid rgba(99,179,237,0.2);border-radius:10px;padding:14px;">
+        <div style="color:#63b3ed;font-weight:700;font-size:13px;margin-bottom:10px;">LTX-2.3 (22B)</div>
+        <div style="font-size:11px;color:#a0aec0;margin-bottom:2px;">Diffusion</div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:6px;">ltx-2.3-22b-dev-fp8.safetensors<br><span style="color:#a0aec0;">→ checkpoints/ 또는 diffusion_models/</span></div>
+        <div style="font-size:11px;color:#a0aec0;margin-bottom:2px;">Text Encoder</div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:6px;">gemma_3_12B_it_fp8 + ltx-2.3_text_projection</div>
+        <div style="font-size:11px;color:#fc8181;margin-bottom:6px;">video VAE + audio VAE <strong>각각 별도 로드!</strong></div>
+        <div style="font-size:11px;color:#e2e8f0;margin-bottom:6px;">Spatial Upscaler → latent_upscale_models/</div>
+        <div style="font-size:11px;color:#68d391;">2-stage pipeline · ComfyUI-LTXVideo 필수</div>
+      </div>
+      <div style="background:rgba(237,100,166,0.06);border:1px solid rgba(237,100,166,0.25);border-radius:10px;padding:14px;">
+        <div style="color:#ed64a6;font-weight:700;font-size:13px;margin-bottom:10px;">Wan 2.2 (5B / 14B)</div>
+        <div style="font-size:11px;color:#a0aec0;margin-bottom:2px;">5B (T2V+I2V 겸용)</div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:6px;">wan2.2_ti2v_5B_fp16 → diffusion_models/</div>
+        <div style="font-size:11px;color:#a0aec0;margin-bottom:2px;">14B (T2V/I2V 각 2개 세트)</div>
+        <div style="font-size:11px;color:#fc8181;font-family:monospace;margin-bottom:6px;">high_noise + low_noise <strong>2개 동시 로드!</strong></div>
+        <div style="font-size:11px;color:#a0aec0;margin-bottom:2px;">Text Encoder / VAE</div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:6px;"><span style="color:#68d391;">umt5_xxl (Wan2.1 공용)</span> / 5B:wan2.2_vae · 14B:wan_2.1_vae</div>
+        <div style="font-size:11px;color:#68d391;">Sampler: euler · simple · CFG 5-7</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 16: 2025 모델 다운로드 목록 ══ -->
+  <div class="slide">
+    <div class="slide-header">
+      <div class="slide-num">Slide 19</div>
+      <h2>2025 모델 <span class="accent">다운로드 목록</span></h2>
+      <div class="divider"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;">
+      <div>
+        <div style="color:#f6ad55;font-size:12px;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em;">Qwen-Image 계열</div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">qwen_image_bf16.safetensors <span style="color:#718096;">→ diffusion_models/</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">qwen_image_edit_fp8_e4m3fn.safetensors <span style="color:#718096;">→ diffusion_models/</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">qwen_2.5_vl_7b_fp8_scaled.safetensors <span style="color:#68d391;">→ text_encoders/ (공용)</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">qwen_image_vae.safetensors <span style="color:#68d391;">→ vae/ (공용)</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:12px;">Qwen-Image-Lightning-4steps-V1.0.safetensors <span style="color:#718096;">→ loras/</span></div>
+
+        <div style="color:#68d391;font-size:12px;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em;">Z-Image Turbo (Alibaba)</div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">z_image_turbo_bf16.safetensors <span style="color:#718096;">→ diffusion_models/</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">z-image-turbo-bf16-aio.safetensors <span style="color:#718096;">→ checkpoints/ (All-in-One)</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">qwen_3_4b.safetensors <span style="color:#718096;">→ text_encoders/</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">ae.safetensors <span style="color:#68d391;">→ vae/ (Flux VAE와 동일)</span></div>
+        <div style="font-size:11px;color:#fc8181;font-family:monospace;margin-bottom:12px;">Z-Image-Turbo-Fun-Controlnet-Union.safetensors <span style="color:#fc8181;">→ model_patches/ !</span></div>
+
+        <div style="color:#9f7aea;font-size:12px;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em;">HiDream-I1 (Vivago AI)</div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">hidream_i1_dev_fp8.safetensors <span style="color:#718096;">→ diffusion_models/ (권장)</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">hidream_e1_1_bf16.safetensors <span style="color:#718096;">→ diffusion_models/ (Edit)</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">clip_l_hidream.safetensors + clip_g_hidream.safetensors <span style="color:#718096;">→ text_encoders/</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">t5xxl_fp8_e4m3fn_scaled.safetensors <span style="color:#68d391;">→ text_encoders/ (Flux/SD3.5 공용)</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">llama_3.1_8b_instruct_fp8_scaled.safetensors <span style="color:#718096;">→ text_encoders/ (전용)</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">ae.safetensors <span style="color:#68d391;">→ vae/ (Flux VAE 공용)</span></div>
+      </div>
+      <div>
+        <div style="color:#63b3ed;font-size:12px;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em;">LTX-2 / 2.3 (Lightricks)</div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">ltx-2.3-22b-dev-fp8.safetensors <span style="color:#718096;">→ checkpoints/</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">gemma_3_12B_it_fp8_scaled.safetensors <span style="color:#718096;">→ text_encoders/gemma-3-12b-it-qat-q4_0-unquantized/</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">ltx-2.3_text_projection_bf16.safetensors <span style="color:#718096;">→ text_encoders/</span></div>
+        <div style="font-size:11px;color:#fc8181;font-family:monospace;margin-bottom:4px;">ltx-2.3 video VAE + audio VAE <span style="color:#fc8181;">→ vae/ (각각!)</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">ltx-2.3-spatial-upscaler-x2-1.0 <span style="color:#f6ad55;">→ latent_upscale_models/ (새 폴더!)</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:12px;">ltx-2.3-22b-distilled-lora-384.safetensors <span style="color:#718096;">→ loras/</span></div>
+
+        <div style="color:#ed64a6;font-size:12px;font-weight:600;margin-bottom:8px;text-transform:uppercase;letter-spacing:0.05em;">Wan 2.2 (Alibaba)</div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">wan2.2_ti2v_5B_fp16.safetensors <span style="color:#718096;">→ diffusion_models/ (5B 겸용)</span></div>
+        <div style="font-size:11px;color:#fc8181;font-family:monospace;margin-bottom:4px;">wan2.2_t2v_high_noise_14B_fp8 + low_noise <span style="color:#fc8181;">→ diffusion_models/ (2개 세트!)</span></div>
+        <div style="font-size:11px;color:#fc8181;font-family:monospace;margin-bottom:4px;">wan2.2_i2v_high_noise_14B + low_noise <span style="color:#fc8181;">→ diffusion_models/ (2개 세트!)</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">umt5_xxl_fp8_e4m3fn_scaled.safetensors <span style="color:#68d391;">→ text_encoders/ (Wan2.1 공용)</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">wan2.2_vae.safetensors <span style="color:#718096;">→ vae/ (5B 전용)</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">wan_2.1_vae.safetensors <span style="color:#718096;">→ vae/ (14B, Wan2.1과 공용)</span></div>
+        <div style="font-size:11px;color:#e2e8f0;font-family:monospace;margin-bottom:4px;">wav2vec2_large_english_fp16 <span style="color:#f6ad55;">→ audio_encoders/ (S2V, 새 폴더!)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 17: 공유 파일 & 주의사항 ══ -->
+  <div class="slide">
+    <div class="slide-header">
+      <div class="slide-num">Slide 20</div>
+      <h2>공유 파일 &amp; <span class="accent">주의사항</span></h2>
+      <div class="divider"></div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:14px;">
+      <div>
+        <div style="color:#a0aec0;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;">파일 공유 맵 (한 번만 다운로드)</div>
+        <div style="background:rgba(99,179,237,0.06);border:1px solid rgba(99,179,237,0.15);border-radius:8px;padding:12px;margin-bottom:8px;">
+          <div style="color:#63b3ed;font-size:12px;font-weight:600;margin-bottom:6px;font-family:monospace;">ae.safetensors (Flux VAE)</div>
+          <div style="font-size:11px;color:#e2e8f0;margin-bottom:2px;">Flux.1 Dev/Schnell · Z-Image Turbo · HiDream-I1</div>
+          <div style="font-size:11px;color:#fc8181;">⚠ Wan / LTX / Qwen-Image → 각자 전용 VAE 사용</div>
+        </div>
+        <div style="background:rgba(99,179,237,0.06);border:1px solid rgba(99,179,237,0.15);border-radius:8px;padding:12px;margin-bottom:8px;">
+          <div style="color:#63b3ed;font-size:12px;font-weight:600;margin-bottom:6px;font-family:monospace;">t5xxl_fp8_e4m3fn_scaled</div>
+          <div style="font-size:11px;color:#e2e8f0;">Flux.1 · SD 3.5 · HiDream-I1 (4개 중 하나)</div>
+        </div>
+        <div style="background:rgba(99,179,237,0.06);border:1px solid rgba(99,179,237,0.15);border-radius:8px;padding:12px;margin-bottom:8px;">
+          <div style="color:#63b3ed;font-size:12px;font-weight:600;margin-bottom:6px;font-family:monospace;">umt5_xxl_fp8_e4m3fn_scaled</div>
+          <div style="font-size:11px;color:#e2e8f0;">Wan 2.1 · Wan 2.2 · HunyuanVideo</div>
+        </div>
+        <div style="background:rgba(99,179,237,0.06);border:1px solid rgba(99,179,237,0.15);border-radius:8px;padding:12px;">
+          <div style="color:#63b3ed;font-size:12px;font-weight:600;margin-bottom:6px;font-family:monospace;">qwen_2.5_vl_7b_fp8_scaled</div>
+          <div style="font-size:11px;color:#e2e8f0;">Qwen-Image Base + Qwen-Image-Edit 공용</div>
+        </div>
+      </div>
+      <div>
+        <div style="color:#a0aec0;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:10px;">신세대 모델 주의사항</div>
+        <div style="background:rgba(246,173,85,0.08);border-left:3px solid #f6ad55;border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:8px;font-size:11px;color:#e2e8f0;line-height:1.6;">
+          <strong style="color:#f6ad55;">로더 노드 변화:</strong> 신세대 모델은 <code style="background:rgba(255,255,255,0.1);padding:1px 4px;border-radius:3px;">CheckpointLoaderSimple</code> 대신 <code style="background:rgba(255,255,255,0.1);padding:1px 4px;border-radius:3px;">Load Diffusion Model</code>. CLIP Loader도 모델별 상이: Flux→Dual, SD3.5→Triple, HiDream→<strong>Quadruple</strong>
+        </div>
+        <div style="background:rgba(252,129,129,0.08);border-left:3px solid #fc8181;border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:8px;font-size:11px;color:#e2e8f0;line-height:1.6;">
+          <strong style="color:#fc8181;">Z-Image ControlNet 경로:</strong> <code style="background:rgba(255,255,255,0.1);padding:1px 4px;border-radius:3px;">models/model_patches/</code> 저장 — <code style="background:rgba(255,255,255,0.1);padding:1px 4px;border-radius:3px;">controlnet/</code> 폴더 아님! <code style="background:rgba(255,255,255,0.1);padding:1px 4px;border-radius:3px;">ModelPatchLoader</code> 노드 사용.
+        </div>
+        <div style="background:rgba(252,129,129,0.08);border-left:3px solid #fc8181;border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:8px;font-size:11px;color:#e2e8f0;line-height:1.6;">
+          <strong style="color:#fc8181;">LTX-2 새 폴더:</strong> <code style="background:rgba(255,255,255,0.1);padding:1px 4px;border-radius:3px;">latent_upscale_models/</code> 직접 생성 필요. 오디오·비디오 VAE 각각 별도 로드. ComfyUI-LTXVideo 커스텀 노드 설치 필수.
+        </div>
+        <div style="background:rgba(252,129,129,0.08);border-left:3px solid #fc8181;border-radius:0 8px 8px 0;padding:10px 14px;margin-bottom:8px;font-size:11px;color:#e2e8f0;line-height:1.6;">
+          <strong style="color:#fc8181;">Wan 2.2 14B dual-model:</strong> high_noise + low_noise 모델 2개를 동시 로드하는 구조. 5B는 단일 모델로 8GB VRAM에서 동작.
+        </div>
+        <div style="background:rgba(99,179,237,0.08);border-left:3px solid #63b3ed;border-radius:0 8px 8px 0;padding:10px 14px;font-size:11px;color:#e2e8f0;line-height:1.6;">
+          <strong style="color:#63b3ed;">CFG 패턴:</strong> HiDream Dev/Fast · Z-Image · LTX-2 · Flux → CFG 1.0. Qwen-Image → 3-5. Wan 2.2 → 5-7. <strong>고/저 CFG 모델 혼용 시 혼동 주의.</strong>
+        </div>
+      </div>
+    </div>
+    <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.1);border-radius:8px;padding:12px;">
+      <div style="color:#a0aec0;font-size:11px;font-weight:600;margin-bottom:8px;">커스텀 노드 설치 필요</div>
+      <div style="display:flex;gap:12px;flex-wrap:wrap;font-size:11px;">
+        <span style="color:#e2e8f0;"><span style="color:#63b3ed;">LTX-2/2.3</span> → ComfyUI-LTXVideo (Lightricks 공식)</span>
+        <span style="color:#e2e8f0;"><span style="color:#9f7aea;">HiDream (선택)</span> → comfyui_HiDream-Sampler</span>
+        <span style="color:#e2e8f0;"><span style="color:#f6ad55;">GGUF 계열</span> → ComfyUI-GGUF (city96)</span>
+        <span style="color:#e2e8f0;"><span style="color:#ed64a6;">Wan 2.2 고급</span> → ComfyUI-WanVideoWrapper (Kijai)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 21: 기타 주요 폴더 ══ -->
+  <div class="slide">
+    <div class="slide-header">
+      <div class="slide-num">Slide 21</div>
+      <h2>기타 <span class="accent">주요 폴더</span></h2>
+      <div class="divider"></div>
+    </div>
+    <div class="card-grid-2">
+      <div class="card">
+        <div class="card-icon">🔌</div>
+        <div class="card-title">custom_nodes/</div>
+        <div class="card-desc">사용자가 설치한 서드파티 노드 패키지. ComfyUI-Manager, ComfyUI-Downloader 등. 시작 시 자동 import.</div>
+        <span class="tag tag-green">확장성</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">🌐</div>
+        <div class="card-title">api_server/</div>
+        <div class="card-desc">외부 연동용 REST API 라우터 정의. /prompt, /history, /queue 등 엔드포인트 관리.</div>
+        <span class="tag tag-blue">API</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚙️</div>
+        <div class="card-title">comfy_execution/</div>
+        <div class="card-desc">노드 그래프 실행 스케줄링, 결과 캐싱, 의존성 분석 엔진.</div>
+        <span class="tag tag-purple">실행</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">👤</div>
+        <div class="card-title">user/</div>
+        <div class="card-desc">사용자 설정 파일, 저장된 워크플로우, ComfyUI-Manager 설정(config.ini), 로그 파일.</div>
+        <span class="tag tag-orange">설정</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">📁</div>
+        <div class="card-title">input / output / temp/</div>
+        <div class="card-desc">입력 이미지 업로드 저장소 / 생성 결과물 출력 / 중간 임시 파일 (미리보기 등).</div>
+        <span class="tag tag-pink">파일 I/O</span>
+      </div>
+      <div class="card">
+        <div class="card-icon">🗄️</div>
+        <div class="card-title">alembic_db/</div>
+        <div class="card-desc">실행 이력, 큐 상태를 저장하는 SQLite DB 마이그레이션 관리 (Alembic 사용).</div>
+        <span class="tag tag-blue">DB</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 22: comfy_extras vs custom_nodes 비교 ══ -->
+  <div class="slide">
+    <div class="slide-header">
+      <div class="slide-num">Slide 22</div>
+      <h2><span class="accent">comfy_extras</span> vs <span class="accent">custom_nodes</span></h2>
+      <div class="divider"></div>
+    </div>
+    <div class="compare-grid">
+      <div class="compare-box official">
+        <h3>📦 comfy_extras/</h3>
+        <ul>
+          <li>ComfyUI <strong style="color:#e2e8f0">공식 팀</strong>이 관리하는 내장 확장</li>
+          <li>ComfyUI 업데이트와 함께 배포됨</li>
+          <li>각 <code style="color:#63b3ed">nodes_xxx.py</code> 파일이 특정 기능 담당</li>
+          <li>직접 수정 시 업데이트 때 덮어씌워짐</li>
+          <li>예: nodes_wan.py, nodes_flux.py, nodes_qwen.py</li>
+          <li>추가하려면 공식 PR(Pull Request) 필요</li>
+        </ul>
+      </div>
+      <div class="compare-box custom">
+        <h3>🔌 custom_nodes/</h3>
+        <ul>
+          <li><strong style="color:#e2e8f0">사용자 / 서드파티</strong>가 개발·설치하는 확장</li>
+          <li>폴더 복사 또는 git clone으로 추가</li>
+          <li>ComfyUI 업데이트와 독립적으로 관리</li>
+          <li>시작 시 <code style="color:#68d391">NODE_CLASS_MAPPINGS</code> 자동 로드</li>
+          <li>API 라우트, JS UI, 모델 연동 모두 가능</li>
+          <li>예: ComfyUI-Manager, ComfyUI-Downloader</li>
+        </ul>
+      </div>
+    </div>
+    <div style="margin-top:24px;background:rgba(246,173,85,0.08);border:1px solid rgba(246,173,85,0.2);border-radius:12px;padding:16px 24px;">
+      <span style="color:#f6ad55;font-weight:700;">💡 결론:</span>
+      <span style="color:#a0aec0;font-size:14px;margin-left:8px;">새 기능 개발 시 항상 <code style="color:#68d391">custom_nodes/</code> 에 작성. comfy_extras는 읽기 전용으로 취급.</span>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 23: 커스텀 노드 — 디렉토리 구조 ══ -->
+  <div class="slide">
+    <div class="slide-header">
+      <div class="slide-num">Slide 23</div>
+      <h2>커스텀 노드 <span class="accent">디렉토리 구조</span></h2>
+      <div class="divider"></div>
+    </div>
+    <div class="two-col" style="gap:40px;align-items:start;">
+      <div>
+        <div style="color:#a0aec0;font-size:14px;margin-bottom:16px;">단일 파일 방식 (간단한 노드)</div>
+        <div class="tree">
+          <div><span class="folder">custom_nodes/</span></div>
+          <div class="indent"><span class="file">my_node.py</span> <span class="comment">← 이것만으로 동작</span></div>
+        </div>
+        <div style="margin-top:32px;color:#a0aec0;font-size:14px;margin-bottom:16px;">패키지 방식 (권장)</div>
+        <div class="tree">
+          <div><span class="folder">custom_nodes/</span></div>
+          <div class="indent"><span class="folder">my_node/</span></div>
+          <div class="indent2"><span class="file">__init__.py</span> <span class="comment">← 필수. 노드 등록</span></div>
+          <div class="indent2"><span class="file">requirements.txt</span> <span class="comment">← 의존 패키지</span></div>
+          <div class="indent2"><span class="folder">js/</span> <span class="comment">← 프론트엔드 UI (선택)</span></div>
+          <div class="indent2"><span class="file">nodes.py</span> <span class="comment">← 노드 클래스 분리 (선택)</span></div>
+        </div>
+      </div>
+      <div>
+        <div style="color:#a0aec0;font-size:14px;margin-bottom:16px;">__init__.py 최소 구성</div>
+        <pre><span class="kw">from</span> .nodes <span class="kw">import</span> MyNode
+
+<span class="cm"># 필수: 노드 등록</span>
+NODE_CLASS_MAPPINGS = {
+    <span class="st">"MyNode"</span>: MyNode,
+}
+
+<span class="cm"># 선택: UI 표시 이름</span>
+NODE_DISPLAY_NAME_MAPPINGS = {
+    <span class="st">"MyNode"</span>: <span class="st">"My Custom Node"</span>,
+}
+
+<span class="cm"># 선택: JS UI 파일 폴더</span>
+WEB_DIRECTORY = <span class="st">"js"</span></pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 24: 노드 클래스 필수 요소 ══ -->
+  <div class="slide">
+    <div class="slide-header">
+      <div class="slide-num">Slide 24</div>
+      <h2>노드 클래스 <span class="accent">필수 요소</span></h2>
+      <div class="divider"></div>
+    </div>
+    <div class="two-col" style="gap:32px;align-items:start;">
+      <pre style="font-size:12.5px;"><span class="kw">class</span> <span class="tp">MyNode</span>:
+
+  <span class="cm"># ① 입력 타입 정의 (필수)</span>
+  <span class="dc">@classmethod</span>
+  <span class="kw">def</span> <span class="fn">INPUT_TYPES</span>(s):
+    <span class="kw">return</span> {
+      <span class="st">"required"</span>: {
+        <span class="st">"image"</span>:    (<span class="st">"IMAGE"</span>,),
+        <span class="st">"steps"</span>:    (<span class="st">"INT"</span>, {<span class="st">"default"</span>: <span class="nm">20</span>, <span class="st">"min"</span>: <span class="nm">1</span>, <span class="st">"max"</span>: <span class="nm">100</span>}),
+        <span class="st">"strength"</span>: (<span class="st">"FLOAT"</span>, {<span class="st">"default"</span>: <span class="nm">0.8</span>, <span class="st">"min"</span>: <span class="nm">0.0</span>, <span class="st">"max"</span>: <span class="nm">1.0</span>}),
+        <span class="st">"text"</span>:     (<span class="st">"STRING"</span>, {<span class="st">"multiline"</span>: <span class="kw">True</span>}),
+      },
+      <span class="st">"optional"</span>: {
+        <span class="st">"mask"</span>: (<span class="st">"MASK"</span>,),  <span class="cm"># 없어도 실행 가능</span>
+      }
+    }
+
+  <span class="cm"># ② 출력 타입 (필수)</span>
+  RETURN_TYPES = (<span class="st">"IMAGE"</span>, <span class="st">"STRING"</span>)
+  RETURN_NAMES = (<span class="st">"result"</span>, <span class="st">"info"</span>)  <span class="cm"># 선택</span>
+
+  <span class="cm"># ③ 실행 메서드 이름 (필수)</span>
+  FUNCTION = <span class="st">"process"</span>
+
+  <span class="cm"># ④ UI 카테고리 (필수)</span>
+  CATEGORY = <span class="st">"MyNodes/Image"</span>
+
+  <span class="cm"># ⑤ 실제 실행 메서드</span>
+  <span class="kw">def</span> <span class="fn">process</span>(self, image, steps, strength, text, mask=<span class="kw">None</span>):
+    result = image * strength
+    info = <span class="fn">f</span><span class="st">"steps=</span>{steps}<span class="st">"</span>
+    <span class="kw">return</span> (result, info)  <span class="cm"># RETURN_TYPES 순서와 일치</span></pre>
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div style="background:rgba(99,179,237,0.08);border:1px solid rgba(99,179,237,0.15);border-radius:12px;padding:16px 20px;">
+          <div style="color:#63b3ed;font-weight:700;font-size:13px;margin-bottom:8px;">INPUT_TYPES 구분</div>
+          <div style="color:#a0aec0;font-size:13px;line-height:1.8;">
+            <code style="color:#68d391">required</code> — 반드시 연결 필요<br>
+            <code style="color:#f6ad55">optional</code> — 연결 없어도 실행 가능<br>
+            <code style="color:#9f7aea">hidden</code> — UI에 숨김, 내부 전달용
+          </div>
+        </div>
+        <div style="background:rgba(104,211,145,0.08);border:1px solid rgba(104,211,145,0.15);border-radius:12px;padding:16px 20px;">
+          <div style="color:#68d391;font-weight:700;font-size:13px;margin-bottom:8px;">RETURN_TYPES</div>
+          <div style="color:#a0aec0;font-size:13px;line-height:1.8;">
+            튜플로 반환 타입 선언<br>
+            실행 메서드도 동일 순서 튜플 반환<br>
+            출력 없으면 <code style="color:#63b3ed">RETURN_TYPES = ()</code>
+          </div>
+        </div>
+        <div style="background:rgba(237,100,166,0.08);border:1px solid rgba(237,100,166,0.15);border-radius:12px;padding:16px 20px;">
+          <div style="color:#ed64a6;font-weight:700;font-size:13px;margin-bottom:8px;">OUTPUT_NODE = True</div>
+          <div style="color:#a0aec0;font-size:13px;line-height:1.8;">
+            Save Image 같이 결과를 외부에 저장하는<br>최종 출력 노드임을 표시
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 25: 내장 데이터 타입 + 특수 속성 ══ -->
+  <div class="slide">
+    <div class="slide-header">
+      <div class="slide-num">Slide 25</div>
+      <h2>내장 <span class="accent">데이터 타입</span> &amp; 특수 속성</h2>
+      <div class="divider"></div>
+    </div>
+    <div class="two-col" style="gap:32px;align-items:start;">
+      <div>
+        <table style="font-size:13.5px;">
+          <thead><tr><th>타입</th><th>설명</th><th>형태</th></tr></thead>
+          <tbody>
+            <tr class="hl"><td>IMAGE</td><td>이미지 배치</td><td style="font-family:monospace;color:#9f7aea;font-size:12px;">[B,H,W,3] float32</td></tr>
+            <tr><td>MASK</td><td>마스크 배치</td><td style="font-family:monospace;color:#9f7aea;font-size:12px;">[B,H,W] float32</td></tr>
+            <tr class="hl"><td>LATENT</td><td>잠재 공간</td><td style="font-family:monospace;color:#9f7aea;font-size:12px;">{"samples": Tensor}</td></tr>
+            <tr><td>MODEL</td><td>diffusion 모델</td><td style="font-family:monospace;color:#9f7aea;font-size:12px;">ModelPatcher</td></tr>
+            <tr class="hl"><td>CLIP</td><td>텍스트 인코더</td><td style="font-family:monospace;color:#9f7aea;font-size:12px;">CLIP 객체</td></tr>
+            <tr><td>VAE</td><td>VAE 모델</td><td style="font-family:monospace;color:#9f7aea;font-size:12px;">VAE 객체</td></tr>
+            <tr class="hl"><td>CONDITIONING</td><td>조건 정보</td><td style="font-family:monospace;color:#9f7aea;font-size:12px;">[[Tensor, dict]]</td></tr>
+            <tr><td>INT / FLOAT / STRING / BOOLEAN</td><td>기본 값 타입</td><td style="font-family:monospace;color:#9f7aea;font-size:12px;">python 기본형</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <div style="color:#a0aec0;font-size:13px;margin-bottom:12px;">특수 클래스 속성</div>
+        <pre style="font-size:12.5px;"><span class="kw">class</span> <span class="tp">MyNode</span>:
+
+  <span class="cm"># 캐시 무효화 — 항상 재실행</span>
+  <span class="dc">@classmethod</span>
+  <span class="kw">def</span> <span class="fn">IS_CHANGED</span>(cls, **kwargs):
+    <span class="kw">return</span> <span class="fn">float</span>(<span class="st">"nan"</span>)  <span class="cm"># nan = 항상 변경</span>
+
+  <span class="cm"># 출력이 리스트 배치임을 표시</span>
+  OUTPUT_IS_LIST = (<span class="kw">False</span>, <span class="kw">True</span>)
+
+  <span class="cm"># 입력으로 리스트를 통째로 받음</span>
+  INPUT_IS_LIST = <span class="kw">True</span>
+
+  <span class="cm"># API 라우트 추가</span>
+<span class="kw">from</span> server <span class="kw">import</span> PromptServer
+<span class="kw">from</span> aiohttp <span class="kw">import</span> web
+
+routes = PromptServer.instance.routes
+
+<span class="dc">@routes.get</span>(<span class="st">"/my_node/status"</span>)
+<span class="kw">async def</span> <span class="fn">get_status</span>(request):
+  <span class="kw">return</span> web.<span class="fn">json_response</span>({<span class="st">"status"</span>: <span class="st">"ok"</span>})</pre>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 26: 실전 예시 ══ -->
+  <div class="slide">
+    <div class="slide-header">
+      <div class="slide-num">Slide 26</div>
+      <h2>실전 예시 — <span class="accent">이미지 밝기 조절 노드</span></h2>
+      <div class="divider"></div>
+    </div>
+    <div class="two-col" style="gap:32px;align-items:start;">
+      <pre><span class="cm"># custom_nodes/brightness_adjust.py</span>
+<span class="kw">import</span> torch
+
+<span class="kw">class</span> <span class="tp">BrightnessAdjust</span>:
+
+  <span class="dc">@classmethod</span>
+  <span class="kw">def</span> <span class="fn">INPUT_TYPES</span>(s):
+    <span class="kw">return</span> {
+      <span class="st">"required"</span>: {
+        <span class="st">"image"</span>: (<span class="st">"IMAGE"</span>,),
+        <span class="st">"brightness"</span>: (<span class="st">"FLOAT"</span>, {
+          <span class="st">"default"</span>: <span class="nm">1.0</span>,
+          <span class="st">"min"</span>: <span class="nm">0.0</span>,
+          <span class="st">"max"</span>: <span class="nm">3.0</span>,
+          <span class="st">"step"</span>: <span class="nm">0.05</span>,
+        }),
+      }
+    }
+
+  RETURN_TYPES = (<span class="st">"IMAGE"</span>,)
+  FUNCTION     = <span class="st">"adjust"</span>
+  CATEGORY     = <span class="st">"image/adjust"</span>
+
+  <span class="kw">def</span> <span class="fn">adjust</span>(self, image, brightness):
+    result = torch.<span class="fn">clamp</span>(image * brightness, <span class="nm">0.0</span>, <span class="nm">1.0</span>)
+    <span class="kw">return</span> (result,)
+
+
+NODE_CLASS_MAPPINGS = {
+  <span class="st">"BrightnessAdjust"</span>: BrightnessAdjust,
+}
+NODE_DISPLAY_NAME_MAPPINGS = {
+  <span class="st">"BrightnessAdjust"</span>: <span class="st">"Brightness Adjust"</span>,
+}</pre>
+      <div style="display:flex;flex-direction:column;gap:16px;">
+        <div style="background:rgba(104,211,145,0.08);border:1px solid rgba(104,211,145,0.2);border-radius:12px;padding:20px;">
+          <div style="color:#68d391;font-weight:700;margin-bottom:12px;">적용 순서</div>
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="background:rgba(99,179,237,0.2);border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#63b3ed;flex-shrink:0;">1</div>
+              <div style="color:#a0aec0;font-size:13px;"><code style="color:#68d391">custom_nodes/</code> 에 파일 저장</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="background:rgba(99,179,237,0.2);border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#63b3ed;flex-shrink:0;">2</div>
+              <div style="color:#a0aec0;font-size:13px;">ComfyUI 재시작</div>
+            </div>
+            <div style="display:flex;align-items:center;gap:12px;">
+              <div style="background:rgba(99,179,237,0.2);border-radius:50%;width:28px;height:28px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:#63b3ed;flex-shrink:0;">3</div>
+              <div style="color:#a0aec0;font-size:13px;">UI 우클릭 → <code style="color:#63b3ed">image/adjust</code> 카테고리에 노드 등장</div>
+            </div>
+          </div>
+        </div>
+        <div style="background:rgba(246,173,85,0.08);border:1px solid rgba(246,173,85,0.2);border-radius:12px;padding:20px;">
+          <div style="color:#f6ad55;font-weight:700;margin-bottom:8px;">image Tensor 주의사항</div>
+          <div style="color:#a0aec0;font-size:13px;line-height:1.8;">
+            shape: <code style="color:#9f7aea">[B, H, W, C]</code><br>
+            dtype: <code style="color:#9f7aea">float32</code>, 값 범위: <code style="color:#9f7aea">0.0 ~ 1.0</code><br>
+            PIL 변환 시: <code style="color:#9f7aea">image * 255</code> 후 uint8 캐스팅
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 27: API 확장 — 전체 구조 ══ -->
+  <div class="slide">
+    <div class="slide-header">
+      <div class="slide-num">Slide 27</div>
+      <h2>API 확장 — <span class="accent">전체 구조</span></h2>
+      <div class="divider"></div>
+    </div>
+    <div class="two-col" style="gap:40px;align-items:start;">
+      <div>
+        <div style="color:#a0aec0;font-size:13px;margin-bottom:14px;">패키지 구조</div>
+        <div class="tree">
+          <div><span class="folder">custom_nodes/</span></div>
+          <div class="indent"><span class="folder">my_model_manager/</span></div>
+          <div class="indent2"><span class="file">__init__.py</span> <span class="comment">← 노드 + API 일괄 등록</span></div>
+          <div class="indent2"><span class="file">api.py</span>       <span class="comment">← REST API 핸들러</span></div>
+          <div class="indent2"><span class="file">node.py</span>      <span class="comment">← 커스텀 노드 클래스</span></div>
+          <div class="indent2"><span class="folder">js/</span></div>
+          <div class="indent2" style="padding-left:84px;"><span class="file">widget.js</span> <span class="comment">← 프론트엔드 UI</span></div>
+        </div>
+        <div style="margin-top:28px;color:#a0aec0;font-size:13px;margin-bottom:14px;">통신 흐름</div>
+        <div style="display:flex;flex-direction:column;gap:10px;">
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="background:rgba(99,179,237,0.15);border:1px solid rgba(99,179,237,0.3);border-radius:8px;padding:8px 14px;font-size:13px;color:#63b3ed;white-space:nowrap;">브라우저 JS</div>
+            <div style="color:#4a5568;">──── REST ────→</div>
+            <div style="background:rgba(104,211,145,0.15);border:1px solid rgba(104,211,145,0.3);border-radius:8px;padding:8px 14px;font-size:13px;color:#68d391;white-space:nowrap;">api.py 핸들러</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="background:rgba(99,179,237,0.15);border:1px solid rgba(99,179,237,0.3);border-radius:8px;padding:8px 14px;font-size:13px;color:#63b3ed;white-space:nowrap;">브라우저 JS</div>
+            <div style="color:#4a5568;">←── WebSocket ──</div>
+            <div style="background:rgba(159,122,234,0.15);border:1px solid rgba(159,122,234,0.3);border-radius:8px;padding:8px 14px;font-size:13px;color:#9f7aea;white-space:nowrap;">send_sync()</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:10px;">
+            <div style="background:rgba(246,173,85,0.15);border:1px solid rgba(246,173,85,0.3);border-radius:8px;padding:8px 14px;font-size:13px;color:#f6ad55;white-space:nowrap;">node.py</div>
+            <div style="color:#4a5568;">── 직접 호출 ──→</div>
+            <div style="background:rgba(237,100,166,0.15);border:1px solid rgba(237,100,166,0.3);border-radius:8px;padding:8px 14px;font-size:13px;color:#ed64a6;white-space:nowrap;">folder_paths</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div style="color:#a0aec0;font-size:13px;margin-bottom:14px;">__init__.py — 일괄 등록</div>
+        <pre><span class="cm"># __init__.py</span>
+<span class="kw">from</span> .node <span class="kw">import</span> ModelSelector
+<span class="kw">from</span> . <span class="kw">import</span> api  <span class="cm"># import만으로 @routes 등록</span>
+
+NODE_CLASS_MAPPINGS = {
+    <span class="st">"ModelSelector"</span>: ModelSelector,
+}
+NODE_DISPLAY_NAME_MAPPINGS = {
+    <span class="st">"ModelSelector"</span>: <span class="st">"Model Selector"</span>,
+}
+WEB_DIRECTORY = <span class="st">"js"</span>  <span class="cm"># JS 파일 자동 서빙</span></pre>
+        <div style="margin-top:16px;background:rgba(246,173,85,0.08);border:1px solid rgba(246,173,85,0.2);border-radius:10px;padding:14px 18px;">
+          <span style="color:#f6ad55;font-weight:700;font-size:13px;">핵심 원칙</span>
+          <div style="color:#a0aec0;font-size:13px;margin-top:6px;line-height:1.7;">
+            <code style="color:#68d391">api_server/</code> 를 직접 수정하지 않고<br>
+            <code style="color:#63b3ed">PromptServer.instance.routes</code> 를 통해<br>
+            custom_nodes 안에서 API를 추가하는 것이 공식 방식
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 28: REST API 핸들러 ══ -->
+  <div class="slide">
+    <div class="slide-header">
+      <div class="slide-num">Slide 28</div>
+      <h2>REST API 핸들러 — <span class="accent">api.py</span></h2>
+      <div class="divider"></div>
+    </div>
+    <div class="two-col" style="gap:28px;align-items:start;">
+      <div>
+        <div style="color:#68d391;font-size:13px;font-weight:700;margin-bottom:10px;">GET — 모델 목록 반환</div>
+        <pre style="font-size:12.5px;"><span class="kw">from</span> aiohttp <span class="kw">import</span> web
+<span class="kw">import</span> folder_paths
+<span class="kw">from</span> server <span class="kw">import</span> PromptServer
+
+routes = PromptServer.instance.routes
+
+<span class="dc">@routes.get</span>(<span class="st">"/my_manager/models"</span>)
+<span class="kw">async def</span> <span class="fn">list_models</span>(request):
+  model_type = request.rel_url.query.<span class="fn">get</span>(
+      <span class="st">"type"</span>, <span class="st">"checkpoints"</span>)
+  <span class="kw">try</span>:
+    files = folder_paths.<span class="fn">get_filename_list</span>(model_type)
+    <span class="kw">return</span> web.<span class="fn">json_response</span>({
+        <span class="st">"models"</span>: files,
+        <span class="st">"type"</span>: model_type
+    })
+  <span class="kw">except</span> Exception <span class="kw">as</span> e:
+    <span class="kw">return</span> web.<span class="fn">json_response</span>(
+        {<span class="st">"error"</span>: <span class="fn">str</span>(e)}, status=<span class="nm">400</span>)</pre>
+        <div style="margin-top:14px;color:#ed64a6;font-size:13px;font-weight:700;margin-bottom:10px;">DELETE — 모델 파일 삭제</div>
+        <pre style="font-size:12.5px;"><span class="dc">@routes.delete</span>(<span class="st">"/my_manager/models/{model_type}/{filename}"</span>)
+<span class="kw">async def</span> <span class="fn">delete_model</span>(request):
+  model_type = request.match_info[<span class="st">"model_type"</span>]
+  filename   = request.match_info[<span class="st">"filename"</span>]
+  full_path  = folder_paths.<span class="fn">get_full_path</span>(
+      model_type, filename)
+  <span class="kw">if not</span> full_path <span class="kw">or not</span> os.path.<span class="fn">exists</span>(full_path):
+    <span class="kw">return</span> web.<span class="fn">json_response</span>(
+        {<span class="st">"error"</span>: <span class="st">"파일 없음"</span>}, status=<span class="nm">404</span>)
+  os.<span class="fn">remove</span>(full_path)
+  <span class="kw">return</span> web.<span class="fn">json_response</span>(
+      {<span class="st">"status"</span>: <span class="st">"deleted"</span>})</pre>
+      </div>
+      <div>
+        <div style="color:#63b3ed;font-size:13px;font-weight:700;margin-bottom:10px;">POST — 다운로드 비동기 실행</div>
+        <pre style="font-size:12.5px;"><span class="dc">@routes.post</span>(<span class="st">"/my_manager/download"</span>)
+<span class="kw">async def</span> <span class="fn">trigger_download</span>(request):
+  data     = <span class="kw">await</span> request.<span class="fn">json</span>()
+  url      = data.<span class="fn">get</span>(<span class="st">"url"</span>)
+  dest_dir = data.<span class="fn">get</span>(<span class="st">"dest"</span>)
+  filename = data.<span class="fn">get</span>(<span class="st">"filename"</span>)
+
+  <span class="kw">if not</span> <span class="fn">all</span>([url, dest_dir, filename]):
+    <span class="kw">return</span> web.<span class="fn">json_response</span>(
+        {<span class="st">"error"</span>: <span class="st">"url/dest/filename 필수"</span>},
+        status=<span class="nm">400</span>)
+
+  <span class="cm"># 비동기 다운로드 태스크 실행 후 즉시 응답</span>
+  asyncio.<span class="fn">create_task</span>(
+      <span class="fn">_download_task</span>(url, dest_dir, filename))
+  <span class="kw">return</span> web.<span class="fn">json_response</span>({
+      <span class="st">"status"</span>: <span class="st">"started"</span>,
+      <span class="st">"filename"</span>: filename
+  })</pre>
+        <div style="margin-top:14px;background:rgba(99,179,237,0.08);border:1px solid rgba(99,179,237,0.2);border-radius:10px;padding:14px 18px;">
+          <div style="color:#63b3ed;font-weight:700;font-size:13px;margin-bottom:6px;">URL 패턴 규칙</div>
+          <div style="color:#a0aec0;font-size:13px;line-height:1.8;">
+            쿼리 파라미터: <code style="color:#68d391">request.rel_url.query.get("key")</code><br>
+            경로 파라미터: <code style="color:#68d391">request.match_info["key"]</code><br>
+            요청 바디:&nbsp;&nbsp;&nbsp;&nbsp;<code style="color:#68d391">await request.json()</code>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 29: WebSocket 실시간 통신 ══ -->
+  <div class="slide">
+    <div class="slide-header">
+      <div class="slide-num">Slide 29</div>
+      <h2>WebSocket <span class="accent">실시간 통신</span></h2>
+      <div class="divider"></div>
+    </div>
+    <div class="two-col" style="gap:28px;align-items:start;">
+      <div>
+        <div style="color:#9f7aea;font-size:13px;font-weight:700;margin-bottom:10px;">서버 → 브라우저 푸시 (api.py)</div>
+        <pre style="font-size:12.5px;"><span class="kw">async def</span> <span class="fn">_download_task</span>(url, dest_dir, filename):
+  dest_paths = folder_paths.folder_names_and_paths
+  save_dir   = dest_paths[dest_dir][<span class="nm">0</span>][<span class="nm">0</span>]
+  save_path  = os.path.<span class="fn">join</span>(save_dir, filename)
+
+  <span class="kw">async with</span> aio.<span class="fn">ClientSession</span>() <span class="kw">as</span> session:
+    <span class="kw">async with</span> session.<span class="fn">get</span>(url) <span class="kw">as</span> resp:
+      total      = <span class="fn">int</span>(resp.headers.<span class="fn">get</span>(
+                       <span class="st">"Content-Length"</span>, <span class="nm">0</span>))
+      downloaded = <span class="nm">0</span>
+      <span class="kw">with</span> <span class="fn">open</span>(save_path, <span class="st">"wb"</span>) <span class="kw">as</span> f:
+        <span class="kw">async for</span> chunk <span class="kw">in</span> \
+            resp.content.<span class="fn">iter_chunked</span>(<span class="nm">1024</span>*<span class="nm">1024</span>):
+          f.<span class="fn">write</span>(chunk)
+          downloaded += <span class="fn">len</span>(chunk)
+          pct = <span class="fn">round</span>(downloaded/total*<span class="nm">100</span>, <span class="nm">1</span>)
+
+          <span class="cm"># 진행률 실시간 브로드캐스트</span>
+          PromptServer.instance.<span class="fn">send_sync</span>(
+            <span class="st">"my_manager/progress"</span>,
+            {<span class="st">"filename"</span>: filename, <span class="st">"progress"</span>: pct}
+          )
+
+  <span class="cm"># 완료 이벤트 전송</span>
+  PromptServer.instance.<span class="fn">send_sync</span>(
+    <span class="st">"my_manager/done"</span>,
+    {<span class="st">"filename"</span>: filename, <span class="st">"path"</span>: save_path}
+  )</pre>
+      </div>
+      <div>
+        <div style="color:#63b3ed;font-size:13px;font-weight:700;margin-bottom:10px;">브라우저에서 WebSocket 이벤트 수신 (widget.js)</div>
+        <pre style="font-size:12.5px;"><span class="kw">import</span> { api } <span class="kw">from</span> <span class="st">"../../scripts/api.js"</span>;
+<span class="kw">import</span> { app } <span class="kw">from</span> <span class="st">"../../scripts/app.js"</span>;
+
+<span class="cm">// REST 호출: 다운로드 트리거</span>
+<span class="kw">async function</span> <span class="fn">downloadModel</span>(url, dest, filename) {
+  <span class="kw">const</span> res = <span class="kw">await</span> api.<span class="fn">fetchApi</span>(
+    <span class="st">"/my_manager/download"</span>, {
+      method: <span class="st">"POST"</span>,
+      headers: {<span class="st">"Content-Type"</span>: <span class="st">"application/json"</span>},
+      body: JSON.<span class="fn">stringify</span>({ url, dest, filename }),
+  });
+  <span class="kw">return await</span> res.<span class="fn">json</span>();
+}
+
+<span class="cm">// WebSocket: 진행률 수신</span>
+api.<span class="fn">addEventListener</span>(<span class="st">"my_manager/progress"</span>,
+  ({ detail }) => {
+    console.<span class="fn">log</span>(
+      <span class="st">`</span>${detail.filename}<span class="st">: </span>${detail.progress}<span class="st">%`</span>);
+  }
+);
+
+<span class="cm">// WebSocket: 완료 수신</span>
+api.<span class="fn">addEventListener</span>(<span class="st">"my_manager/done"</span>,
+  ({ detail }) => {
+    app.ui.dialog.<span class="fn">show</span>(
+      <span class="st">`완료: </span>${detail.filename}<span class="st">`</span>);
+  }
+);</pre>
+        <div style="margin-top:14px;background:rgba(159,122,234,0.08);border:1px solid rgba(159,122,234,0.2);border-radius:10px;padding:14px 18px;">
+          <div style="color:#9f7aea;font-weight:700;font-size:13px;margin-bottom:6px;">send_sync 동작 원리</div>
+          <div style="color:#a0aec0;font-size:13px;line-height:1.7;">
+            동기 스레드에서 호출 가능<br>
+            내부적으로 <code style="color:#9f7aea">loop.call_soon_threadsafe()</code> 사용<br>
+            <code style="color:#9f7aea">sid=None</code> 이면 전체 클라이언트에 브로드캐스트
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 30: node.py 연동 + 핵심 패턴 정리 ══ -->
+  <div class="slide">
+    <div class="slide-header">
+      <div class="slide-num">Slide 30</div>
+      <h2>노드 연동 &amp; <span class="accent">핵심 패턴 정리</span></h2>
+      <div class="divider"></div>
+    </div>
+    <div class="two-col" style="gap:28px;align-items:start;">
+      <div>
+        <div style="color:#f6ad55;font-size:13px;font-weight:700;margin-bottom:10px;">node.py — folder_paths 직접 활용</div>
+        <pre style="font-size:12.5px;"><span class="kw">import</span> folder_paths
+
+<span class="kw">class</span> <span class="tp">ModelSelector</span>:
+
+  <span class="dc">@classmethod</span>
+  <span class="kw">def</span> <span class="fn">INPUT_TYPES</span>(cls):
+    <span class="cm"># 모델 목록을 드롭다운으로 표시</span>
+    models = folder_paths.<span class="fn">get_filename_list</span>(
+        <span class="st">"checkpoints"</span>)
+    <span class="kw">return</span> {
+      <span class="st">"required"</span>: {
+        <span class="st">"model_name"</span>: (models,),  <span class="cm"># 드롭다운</span>
+        <span class="st">"strength"</span>: (<span class="st">"FLOAT"</span>, {
+            <span class="st">"default"</span>: <span class="nm">1.0</span>, <span class="st">"min"</span>: <span class="nm">0.0</span>, <span class="st">"max"</span>: <span class="nm">2.0</span>}),
+      }
+    }
+
+  RETURN_TYPES = (<span class="st">"STRING"</span>,)
+  RETURN_NAMES = (<span class="st">"model_path"</span>,)
+  FUNCTION     = <span class="st">"select"</span>
+  CATEGORY     = <span class="st">"MyManager"</span>
+
+  <span class="cm"># 모델 목록 변경 시 재캐시</span>
+  <span class="dc">@classmethod</span>
+  <span class="kw">def</span> <span class="fn">IS_CHANGED</span>(cls, **kwargs):
+    <span class="kw">return</span> folder_paths.<span class="fn">get_filename_list</span>(
+        <span class="st">"checkpoints"</span>)
+
+  <span class="kw">def</span> <span class="fn">select</span>(self, model_name, strength):
+    full_path = folder_paths.<span class="fn">get_full_path</span>(
+        <span class="st">"checkpoints"</span>, model_name)
+    <span class="kw">return</span> (full_path,)</pre>
+      </div>
+      <div>
+        <div style="color:#68d391;font-size:13px;font-weight:700;margin-bottom:12px;">핵심 패턴 정리</div>
+        <table style="font-size:13px;">
+          <thead><tr><th>방향</th><th>방법</th></tr></thead>
+          <tbody>
+            <tr class="hl">
+              <td style="color:#63b3ed;">브라우저 → 서버</td>
+              <td><code style="color:#68d391;">api.fetchApi("/경로", options)</code></td>
+            </tr>
+            <tr>
+              <td style="color:#9f7aea;">서버 → 브라우저</td>
+              <td><code style="color:#68d391;">PromptServer.instance.send_sync("이벤트", data)</code></td>
+            </tr>
+            <tr class="hl">
+              <td style="color:#f6ad55;">모델 경로 조회</td>
+              <td><code style="color:#68d391;">folder_paths.get_full_path("type", name)</code></td>
+            </tr>
+            <tr>
+              <td style="color:#f6ad55;">모델 목록 조회</td>
+              <td><code style="color:#68d391;">folder_paths.get_filename_list("type")</code></td>
+            </tr>
+            <tr class="hl">
+              <td style="color:#ed64a6;">API 라우트 등록</td>
+              <td><code style="color:#68d391;">@routes.get/post/delete("...")</code></td>
+            </tr>
+            <tr>
+              <td style="color:#ed64a6;">JS WS 이벤트 수신</td>
+              <td><code style="color:#68d391;">api.addEventListener("이벤트", cb)</code></td>
+            </tr>
+          </tbody>
+        </table>
+        <div style="margin-top:16px;background:rgba(104,211,145,0.08);border:1px solid rgba(104,211,145,0.2);border-radius:10px;padding:14px 18px;">
+          <div style="color:#68d391;font-weight:700;font-size:13px;margin-bottom:6px;">노드 vs API 역할 분리</div>
+          <div style="color:#a0aec0;font-size:13px;line-height:1.7;">
+            <strong style="color:#e2e8f0">node.py</strong> — 워크플로우 실행 시 모델 처리<br>
+            <strong style="color:#e2e8f0">api.py</strong> &nbsp;— 브라우저 UI와 실시간 상호작용<br>
+            두 파일이 <code style="color:#68d391">folder_paths</code> 를 공유하며 협력
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 31: 실행 흐름 ══ -->
+  <div class="slide">
+    <div class="slide-header">
+      <div class="slide-num">Slide 31</div>
+      <h2>워크플로우 <span class="accent">실행 흐름</span></h2>
+      <div class="divider"></div>
+    </div>
+    <div style="display:flex; flex-direction:column; gap:16px; margin-top:8px;">
+      <div style="display:flex; align-items:center; gap:20px;">
+        <div style="background:rgba(99,179,237,0.15);border:1px solid rgba(99,179,237,0.4);border-radius:12px;padding:16px 24px;min-width:200px;text-align:center;">
+          <div style="color:#63b3ed;font-weight:700;font-size:15px;">① 브라우저</div>
+          <div style="color:#718096;font-size:13px;margin-top:4px;">워크플로우 JSON 전송</div>
+        </div>
+        <div style="color:#4a5568;font-size:24px;">→</div>
+        <div style="background:rgba(159,122,234,0.15);border:1px solid rgba(159,122,234,0.4);border-radius:12px;padding:16px 24px;min-width:200px;text-align:center;">
+          <div style="color:#9f7aea;font-weight:700;font-size:15px;">② server.py</div>
+          <div style="color:#718096;font-size:13px;margin-top:4px;">WebSocket / REST 수신</div>
+        </div>
+        <div style="color:#4a5568;font-size:24px;">→</div>
+        <div style="background:rgba(237,100,166,0.15);border:1px solid rgba(237,100,166,0.4);border-radius:12px;padding:16px 24px;min-width:200px;text-align:center;">
+          <div style="color:#ed64a6;font-weight:700;font-size:15px;">③ execution.py</div>
+          <div style="color:#718096;font-size:13px;margin-top:4px;">그래프 파싱 &amp; 큐 등록</div>
+        </div>
+      </div>
+      <div style="display:flex; align-items:center; gap:20px; padding-left:220px;">
+        <div style="color:#4a5568;font-size:24px;">↓</div>
+      </div>
+      <div style="display:flex; align-items:center; gap:20px;">
+        <div style="background:rgba(246,173,85,0.15);border:1px solid rgba(246,173,85,0.4);border-radius:12px;padding:16px 24px;min-width:200px;text-align:center;">
+          <div style="color:#f6ad55;font-weight:700;font-size:15px;">⑥ 결과 반환</div>
+          <div style="color:#718096;font-size:13px;margin-top:4px;">output/ 저장 + 브라우저 전송</div>
+        </div>
+        <div style="color:#4a5568;font-size:24px;">←</div>
+        <div style="background:rgba(104,211,145,0.15);border:1px solid rgba(104,211,145,0.4);border-radius:12px;padding:16px 24px;min-width:200px;text-align:center;">
+          <div style="color:#68d391;font-weight:700;font-size:15px;">⑤ comfy/</div>
+          <div style="color:#718096;font-size:13px;margin-top:4px;">모델 추론 (GPU)</div>
+        </div>
+        <div style="color:#4a5568;font-size:24px;">←</div>
+        <div style="background:rgba(99,179,237,0.15);border:1px solid rgba(99,179,237,0.4);border-radius:12px;padding:16px 24px;min-width:200px;text-align:center;">
+          <div style="color:#63b3ed;font-weight:700;font-size:15px;">④ nodes.py</div>
+          <div style="color:#718096;font-size:13px;margin-top:4px;">노드별 순차 실행</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ══ SLIDE 32: 정리 ══ -->
+  <div class="slide slide-cover">
+    <div class="badge">Summary</div>
+    <h1 style="font-size:48px;">핵심 정리</h1>
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:20px;margin-top:40px;max-width:900px;">
+      <div style="background:rgba(99,179,237,0.08);border:1px solid rgba(99,179,237,0.2);border-radius:16px;padding:24px;text-align:left;">
+        <div style="font-size:24px;margin-bottom:12px;">🧠</div>
+        <div style="color:#63b3ed;font-weight:700;margin-bottom:8px;">comfy/</div>
+        <div style="color:#718096;font-size:13px;line-height:1.6;">AI 추론의 핵심. 모델 로딩, 샘플링, VRAM 관리를 담당</div>
+      </div>
+      <div style="background:rgba(159,122,234,0.08);border:1px solid rgba(159,122,234,0.2);border-radius:16px;padding:24px;text-align:left;">
+        <div style="font-size:24px;margin-bottom:12px;">🔧</div>
+        <div style="color:#9f7aea;font-weight:700;margin-bottom:8px;">execution.py</div>
+        <div style="color:#718096;font-size:13px;line-height:1.6;">노드 그래프를 실제로 실행하는 오케스트레이터</div>
+      </div>
+      <div style="background:rgba(104,211,145,0.08);border:1px solid rgba(104,211,145,0.2);border-radius:16px;padding:24px;text-align:left;">
+        <div style="font-size:24px;margin-bottom:12px;">🔌</div>
+        <div style="color:#68d391;font-weight:700;margin-bottom:8px;">custom_nodes/</div>
+        <div style="color:#718096;font-size:13px;line-height:1.6;">서드파티 확장의 핵심. 시작 시 자동 로드되어 기능 추가</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- 네비게이션 -->
+<div class="nav">
+  <button class="nav-btn" id="prevBtn" onclick="changeSlide(-1)">&#8592;</button>
+  <div class="nav-counter"><span class="cur" id="curSlide">1</span> / <span id="totalSlides"></span></div>
+  <button class="nav-btn" id="nextBtn" onclick="changeSlide(1)">&#8594;</button>
+</div>
+
+<script>
+  const slides = document.querySelectorAll('.slide');
+  const total = slides.length;
+  let current = 0;
+
+  document.getElementById('totalSlides').textContent = total;
+  document.getElementById('slideIndicator').textContent = 'ComfyUI Architecture';
+
+  function updateProgress() {
+    const pct = ((current + 1) / total) * 100;
+    document.getElementById('progressBar').style.width = pct + '%';
+    document.getElementById('curSlide').textContent = current + 1;
+  }
+
+  function changeSlide(dir) {
+    slides[current].classList.remove('active');
+    current = (current + dir + total) % total;
+    slides[current].classList.add('active');
+    updateProgress();
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown' || e.key === ' ') changeSlide(1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')                     changeSlide(-1);
+  });
+
+  updateProgress();
+</script>
+</body>
+</html>
